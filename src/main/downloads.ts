@@ -63,6 +63,9 @@ class DownloadService extends EventEmitter {
       entry.received = item.getReceivedBytes();
       entry.total = item.getTotalBytes();
       entry.state = state === 'interrupted' ? 'interrupted' : item.isPaused() ? 'paused' : 'progressing';
+      // Smooth Chromium's instantaneous rate so the ETA doesn't jump around.
+      const rate = entry.state === 'progressing' ? item.getCurrentBytesPerSecond() : 0;
+      entry.speed = entry.speed ? entry.speed * 0.7 + rate * 0.3 : rate;
       this.changed(false);
     });
     item.once('done', (_e, state) => {
@@ -70,6 +73,7 @@ class DownloadService extends EventEmitter {
       entry.path = item.getSavePath() || entry.path;
       entry.filename = entry.path ? path.basename(entry.path) : entry.filename;
       entry.state = state === 'completed' ? 'completed' : state === 'cancelled' ? 'cancelled' : 'interrupted';
+      entry.speed = undefined;
       this.items.delete(entry.id);
       if (state === 'completed') this.unseen++;
       if (persist) this.store.save();
@@ -110,7 +114,9 @@ class DownloadService extends EventEmitter {
     const active = this.list(includePrivate).filter((e) => e.state === 'progressing' || e.state === 'paused');
     const total = active.reduce((a, e) => a + (e.total || 0), 0);
     const received = active.reduce((a, e) => a + e.received, 0);
-    return { active: active.length, progress: active.length && total ? received / total : active.length ? -1 : 0, recent: this.unseen };
+    const speed = active.reduce((a, e) => a + (e.speed ?? 0), 0);
+    const known = active.length > 0 && active.every((e) => e.total > 0) && speed > 0;
+    return { active: active.length, progress: active.length && total ? received / total : active.length ? -1 : 0, recent: this.unseen, eta: known ? Math.ceil((total - received) / speed) : -1 };
   }
 
   hasAny(includePrivate: boolean) {

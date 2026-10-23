@@ -214,3 +214,13 @@ export function formatBytes(n: number): string {
   const i = Math.min(u.length - 1, Math.floor(Math.log(n) / Math.log(1024)));
   return `${(n / 1024 ** i).toFixed(i === 0 ? 0 : n / 1024 ** i < 10 ? 1 : 0)} ${u[i]}`;
 }
+
+/** "12 s left", "4 min left", "1 h 5 min left". */
+export function formatEta(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return '';
+  if (seconds < 60) return `${Math.max(1, Math.round(seconds))} s left`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)} min left`;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.round((seconds % 3600) / 60);
+  return m ? `${h} h ${m} min left` : `${h} h left`;
+}

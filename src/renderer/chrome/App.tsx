@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { BookmarkTree, TabState, WindowState } from '../../shared/types';
 import { px, rye, useThemePayload } from '../ui/bridge';
+import { formatEta } from '../ui/components';
 import { Icon } from '../ui/Icon';
 import { AddressBar } from './AddressBar';
 import { BookmarksBar } from './BookmarksBar';
@@ -47,6 +48,13 @@ function WindowControls({ maximized }: { maximized: boolean }) {
 
 function DownloadsButton({ state, pinned }: { state: WindowState; pinned: boolean }) {
   const d = state.downloads;
+  // Bounce the arrow whenever a new download starts.
+  const prev = useRef(d.active);
+  const [arrive, setArrive] = useState(0);
+  useEffect(() => {
+    if (d.active > prev.current) setArrive((n) => n + 1);
+    prev.current = d.active;
+  }, [d.active]);
   if (!pinned && !d.active && !d.recent) return null;
   const pct = d.progress < 0 ? 0.25 : d.progress;
   const r = 10;
@@ -55,13 +63,15 @@ function DownloadsButton({ state, pinned }: { state: WindowState; pinned: boolea
     <button
       type="button"
       className="icon-btn dl-btn"
+      key={arrive}
       data-anchor="downloads"
       data-active={d.active > 0}
+      data-arrive={arrive > 0}
       onClick={(e) => {
         hideTooltip(true);
         rye.send('downloads:panel', rectOf(e.currentTarget));
       }}
-      {...tip(d.active ? `${d.active} download${d.active > 1 ? 's' : ''} in progress` : 'Downloads', shortcutLabel('J'))}
+      {...tip(d.active ? [`${d.active} download${d.active > 1 ? 's' : ''} in progress`, formatEta(d.eta)].filter(Boolean).join(' · ') : 'Downloads', shortcutLabel('J'))}
     >
       <Icon name="download" size={16} />
       {d.active > 0 && (

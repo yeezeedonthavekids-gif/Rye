@@ -105,9 +105,10 @@ export default function NewTab({ theme }: { theme: ThemePayload }) {
 
         {s.showShortcuts && (
           <div className="ntp-grid">
-            {s.shortcuts.map((sc) => (
+            {s.shortcuts.map((sc, i) => (
               <div
                 key={sc.id}
+                style={{ ['--i' as any]: i }}
                 className="tile"
                 draggable
                 data-dragging={dragId === sc.id}

@@ -96,7 +96,67 @@ body,
     background-color var(--dur-fast) var(--ease),
     color var(--dur-fast) var(--ease),
     box-shadow var(--dur) var(--ease),
-    transform var(--dur) var(--ease-out);
+    transform var(--dur) var(--ease-out),
+    width var(--dur) var(--ease-out),
+    min-width var(--dur) var(--ease-out),
+    height var(--dur) var(--ease-out),
+    padding var(--dur) var(--ease-out),
+    margin var(--dur) var(--ease-out),
+    opacity var(--dur-fast) var(--ease);
+}
+.tab[data-closing='true'] {
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  margin-right: calc(-1 * var(--tab-gap));
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.vtabs .tab[data-closing='true'] {
+  width: 100%;
+  height: 0;
+  margin: 0 0 calc(-1 * var(--tab-gap));
+}
+
+/* The active surface glides from tab to tab. */
+.tabs,
+.vtabs {
+  position: relative;
+}
+.tab-glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: var(--r-tab);
+  background: var(--raised);
+  box-shadow: var(--shadow-1);
+  pointer-events: none;
+  transition:
+    transform var(--dur-slow) var(--ease-out),
+    width var(--dur-slow) var(--ease-out),
+    height var(--dur-slow) var(--ease-out),
+    background-color var(--dur) var(--ease),
+    opacity var(--dur-fast) var(--ease);
+}
+[data-theme='dark'] .tab-glider {
+  box-shadow: var(--shadow-1), inset 0 1px 0 var(--highlight);
+}
+[data-tab-shape='quiet'] .tab-glider {
+  background: var(--press);
+  box-shadow: none;
+}
+.tabs[data-dragging='true'] .tab-glider,
+.vtabs[data-dragging='true'] .tab-glider {
+  opacity: 0;
+}
+.tab-glider[data-animate='false'] {
+  transition: background-color var(--dur) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+.tabs[data-settling='true'] .tab-glider,
+.vtabs[data-settling='true'] .tab-glider {
+  transition: none;
 }
 @keyframes tab-in {
   from {
@@ -108,17 +168,14 @@ body,
   background: var(--hover);
   color: var(--text);
 }
-.tab[data-active='true'] {
-  background: var(--raised);
+/* The glider draws the active surface; the tab itself stays clear. */
+.tab[data-active='true'],
+.tab[data-active='true']:hover {
+  background: transparent;
   color: var(--text);
-  box-shadow: var(--shadow-1);
 }
-[data-theme='dark'] .tab[data-active='true'] {
-  box-shadow: var(--shadow-1), inset 0 1px 0 var(--highlight);
-}
-[data-tab-shape='quiet'] .tab[data-active='true'] {
-  background: var(--press);
-  box-shadow: none;
+.tab {
+  z-index: 1;
 }
 .tab[data-compact='true'] {
   flex: none;
@@ -767,4 +824,43 @@ body,
   .findbar {
     flex: 1;
   }
+}
+
+/* ─── Small moments ──────────────────────────────────────────────────────── */
+.star-pop {
+  display: grid;
+  animation: star-pop var(--dur-slow) var(--spring);
+}
+@keyframes star-pop {
+  0% {
+    transform: scale(0.6) rotate(-18deg);
+  }
+  60% {
+    transform: scale(calc(1 + 0.3 * var(--lift, 1))) rotate(6deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+.dl-btn[data-arrive='true'] > svg:first-child {
+  animation: dl-arrive 520ms var(--spring);
+}
+@keyframes dl-arrive {
+  0% {
+    transform: translateY(calc(-7px * var(--lift, 1)));
+    opacity: 0.2;
+  }
+  55% {
+    transform: translateY(calc(2px * var(--lift, 1)));
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+.new-tab:active svg {
+  transform: rotate(90deg);
+}
+.new-tab svg {
+  transition: transform var(--dur) var(--spring);
 }

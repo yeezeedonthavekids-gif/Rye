@@ -27,3 +27,35 @@ if (location.protocol === 'rye:' && window.top === window) {
   };
   contextBridge.exposeInMainWorld('rye', bridge);
 }
+
+// Google refuses sign-in from browsers it identifies as embedded frameworks. On
+// its sign-in host, Rye already sends a Firefox user agent (see main/compat.ts);
+// here the Chromium-only JavaScript surface is made consistent with it before
+// any page script runs. No other site is touched.
+if (location.hostname === 'accounts.google.com') {
+  contextBridge.executeInMainWorld({
+    func: () => {
+      const nav = Navigator.prototype as any;
+      const fixed = (obj: any, prop: string, value: unknown) => {
+        try {
+          Object.defineProperty(obj, prop, { get: () => value, configurable: true });
+        } catch {
+          /* ignore */
+        }
+      };
+      try {
+        delete nav.userAgentData;
+      } catch {
+        /* ignore */
+      }
+      fixed(nav, 'vendor', '');
+      fixed(nav, 'productSub', '20100101');
+      fixed(nav, 'webdriver', false);
+      try {
+        delete (window as any).chrome;
+      } catch {
+        /* ignore */
+      }
+    },
+  });
+}

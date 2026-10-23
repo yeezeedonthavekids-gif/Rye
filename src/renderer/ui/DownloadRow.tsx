@@ -1,9 +1,14 @@
 import type { DownloadEntry } from '../../shared/types';
-import { formatBytes } from './components';
+import { formatBytes, formatEta } from './components';
 import { Icon } from './Icon';
 
 function statusLine(e: DownloadEntry & { exists?: boolean }) {
-  if (e.state === 'progressing') return e.total ? `${formatBytes(e.received)} of ${formatBytes(e.total)}` : `${formatBytes(e.received)}`;
+  if (e.state === 'progressing') {
+    const size = e.total ? `${formatBytes(e.received)} of ${formatBytes(e.total)}` : formatBytes(e.received);
+    if (!e.speed) return size;
+    const eta = e.total ? formatEta((e.total - e.received) / e.speed) : '';
+    return [size, `${formatBytes(e.speed)}/s`, eta].filter(Boolean).join(' · ');
+  }
   if (e.state === 'paused') return `Paused · ${formatBytes(e.received)}${e.total ? ` of ${formatBytes(e.total)}` : ''}`;
   if (e.state === 'completed') return e.exists === false ? 'Deleted' : formatBytes(e.total || e.received);
   if (e.state === 'cancelled') return 'Cancelled';

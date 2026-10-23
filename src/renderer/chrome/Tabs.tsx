@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { TabState } from '../../shared/types';
 import { hostOf } from '../../shared/url';
-import { rye } from '../ui/bridge';
+import { px, rye } from '../ui/bridge';
 import { Favicon } from '../ui/components';
 import { Icon, RyeMark } from '../ui/Icon';
 import { hideTooltip, tip } from './tooltip';
@@ -129,6 +129,75 @@ function gapOf(el: HTMLElement | null, axis: Axis) {
   return parseFloat(axis === 'x' ? cs.columnGap : cs.rowGap) || 0;
 }
 
+/** Collapses the tab, then closes it; the strip closes the gap smoothly. */
+function closeTab(id: number) {
+  hideTooltip(true);
+  const el = document.querySelector<HTMLElement>(`[data-tab-id="${id}"]`);
+  const dur = px('--dur', 170);
+  if (!el || dur < 20) {
+    rye.send('tab:close', id);
+    return;
+  }
+  el.dataset.closing = 'true';
+  window.dispatchEvent(new CustomEvent('rye:tabs-layout', { detail: dur }));
+  window.setTimeout(() => {
+    rye.send('tab:close', id);
+    // If the page asked to stay (unsaved changes), bring the tab back.
+    window.setTimeout(() => el.isConnected && delete el.dataset.closing, 600);
+  }, dur);
+}
+
+/**
+ * The active tab's raised surface is one element that glides between tabs,
+ * rather than each tab switching its own background.
+ */
+function useGlider(container: React.RefObject<HTMLElement | null>, activeId: number, axis: Axis) {
+  const [g, setG] = useState<{ x: number; y: number; w: number; h: number; animate: boolean } | null>(null);
+  const lastActive = useRef(activeId);
+  // Switching tabs glides; any other layout change (tabs opening, closing,
+  // resizing) moves the surface instantly so it never lags behind its tab.
+  const measure = useCallback(
+    (animate: boolean) => {
+      const el = container.current?.querySelector<HTMLElement>(`[data-tab-id="${activeId}"]`);
+      if (!el) return setG(null);
+      const next = { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, animate };
+      setG((cur) => (cur && cur.x === next.x && cur.y === next.y && cur.w === next.w && cur.h === next.h ? cur : next));
+    },
+    [activeId, container],
+  );
+  useLayoutEffect(() => {
+    const switched = lastActive.current !== activeId;
+    lastActive.current = activeId;
+    measure(switched);
+  });
+  useEffect(() => {
+    const el = container.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => measure(false));
+    ro.observe(el);
+    for (const c of el.children) ro.observe(c);
+    // Follow tabs frame by frame while one collapses.
+    let raf = 0;
+    const follow = (e: Event) => {
+      const until = performance.now() + (e as CustomEvent<number>).detail + 60;
+      cancelAnimationFrame(raf);
+      const step = () => {
+        measure(false);
+        if (performance.now() < until) raf = requestAnimationFrame(step);
+      };
+      step();
+    };
+    window.addEventListener('rye:tabs-layout', follow);
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+      window.removeEventListener('rye:tabs-layout', follow);
+    };
+  });
+  if (!g) return null;
+  return <span className="tab-glider" data-axis={axis} data-animate={g.animate} aria-hidden style={{ width: g.w, height: g.h, transform: `translate(${g.x}px, ${g.y}px)` }} />;
+}
+
 function TabItem({
   tab,
   active,
@@ -176,8 +245,7 @@ function TabItem({
       onAuxClick={(e) => {
         if (e.button === 1) {
           e.preventDefault();
-          hideTooltip(true);
-          rye.send('tab:close', tab.id);
+          closeTab(tab.id);
         }
       }}
       onContextMenu={(e) => {
@@ -211,8 +279,7 @@ function TabItem({
           data-no-drag
           onClick={(e) => {
             e.stopPropagation();
-            hideTooltip(true);
-            rye.send('tab:close', tab.id);
+            closeTab(tab.id);
           }}
           {...tip('Close tab', undefined, { delay: 900 })}
         >
@@ -226,6 +293,7 @@ function TabItem({
 export function TabStrip({ tabs, activeId, showTitles }: { tabs: TabState[]; activeId: number; showTitles: boolean }) {
   const scroller = useRef<HTMLDivElement>(null);
   const { drag, settling, onPointerDown, offsetFor } = useReorder(tabs, 'x', scroller);
+  const glider = useGlider(scroller, activeId, 'x');
   const [edges, setEdges] = useState({ left: false, right: false });
 
   const updateEdges = () => {
@@ -264,6 +332,7 @@ export function TabStrip({ tabs, activeId, showTitles }: { tabs: TabState[]; act
         }}
         onDoubleClick={(e) => e.target === scroller.current && rye.send('tab:new')}
       >
+        {glider}
         {tabs.map((t, i) => (
           <TabItem key={t.id} tab={t} index={i} active={t.id === activeId} offset={offsetFor(i, t.id)} dragging={drag?.id === t.id} compact={t.pinned} vertical={false} showTitles={showTitles} onPointerDown={onPointerDown} />
         ))}
@@ -278,11 +347,13 @@ export function TabStrip({ tabs, activeId, showTitles }: { tabs: TabState[]; act
 export function TabList({ tabs, activeId, collapsed, showTitles }: { tabs: TabState[]; activeId: number; collapsed: boolean; showTitles: boolean }) {
   const list = useRef<HTMLDivElement>(null);
   const { drag, settling, onPointerDown, offsetFor } = useReorder(tabs, 'y', list);
+  const glider = useGlider(list, activeId, 'y');
   useEffect(() => {
     list.current?.querySelector<HTMLElement>(`[data-tab-id="${activeId}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [activeId, tabs.length]);
   return (
     <div ref={list} className="vtabs" role="tablist" aria-orientation="vertical" data-dragging={!!drag} data-settling={settling} data-collapsed={collapsed}>
+      {glider}
       {tabs.map((t, i) => (
         <TabItem key={t.id} tab={t} index={i} active={t.id === activeId} offset={offsetFor(i, t.id)} dragging={drag?.id === t.id} compact={collapsed} vertical showTitles={showTitles} onPointerDown={onPointerDown} />
       ))}

@@ -33,6 +33,13 @@ export function AddressBar({ tab, bookmarked, isPrivate, engineName }: { tab: Ta
   const justFocused = useRef(false);
 
   const url = tab?.url ?? '';
+  // Pop the star when the current page becomes bookmarked, not on tab switches.
+  const prevStar = useRef({ id: tab?.id, on: bookmarked });
+  const [popKey, setPopKey] = useState(0);
+  useEffect(() => {
+    if (prevStar.current.id === tab?.id && !prevStar.current.on && bookmarked) setPopKey((k) => k + 1);
+    prevStar.current = { id: tab?.id, on: bookmarked };
+  }, [bookmarked, tab?.id]);
   const isNewTab = url.startsWith('rye://newtab');
 
   // While not editing, mirror the active tab's URL.
@@ -288,7 +295,9 @@ export function AddressBar({ tab, bookmarked, isPrivate, engineName }: { tab: Ta
           }}
           {...tip(bookmarked ? 'Edit bookmark' : 'Bookmark this page', rye.platform === 'darwin' ? '⌘D' : 'Ctrl+D')}
         >
-          <Icon name="star" size={15} fill={bookmarked ? 'currentColor' : 'none'} />
+          <span key={popKey} className={popKey ? 'star-pop' : undefined}>
+            <Icon name="star" size={15} fill={bookmarked ? 'currentColor' : 'none'} />
+          </span>
         </button>
       )}
     </div>

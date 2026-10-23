@@ -239,7 +239,7 @@ export class RyeWindow {
       htmlFullscreen: this.htmlFullscreen,
       platform: process.platform,
       bookmarkedActive: !!(active && bookmarks.findByUrl(active.url)),
-      downloads: downloads.hasAny(this.isPrivate) ? downloads.summary(this.isPrivate) : { active: 0, progress: 0, recent: 0 },
+      downloads: downloads.hasAny(this.isPrivate) ? downloads.summary(this.isPrivate) : { active: 0, progress: 0, recent: 0, eta: -1 },
       canReopen: this.isPrivate ? this.privateClosed.length > 0 : hasClosed(),
     };
     const json = JSON.stringify(state);

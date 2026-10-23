@@ -151,6 +151,7 @@ export interface DownloadSummary {
   active: number;
   progress: number; // 0..1 across active downloads, -1 when unknown
   recent: number; // downloads finished since panel last opened
+  eta: number; // seconds until all active downloads finish, -1 when unknown
 }
 
 export interface Bookmark {
@@ -187,6 +188,8 @@ export interface DownloadEntry {
   total: number;
   started: number;
   mime?: string;
+  /** Smoothed bytes per second while downloading. */
+  speed?: number;
 }
 
 export interface Suggestion {

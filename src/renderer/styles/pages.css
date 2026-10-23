@@ -1052,3 +1052,32 @@ body {
     flex-wrap: wrap;
   }
 }
+
+/* New tab: elements settle in, one after another. */
+.ntp-center > * {
+  animation: rise var(--dur-slow) var(--ease-out) both;
+}
+.ntp-center > :nth-child(2) {
+  animation-delay: 40ms;
+}
+.ntp-center > :nth-child(3) {
+  animation-delay: 80ms;
+}
+.ntp-center > :nth-child(4) {
+  animation-delay: 120ms;
+}
+.ntp-grid > .tile {
+  animation: rise var(--dur-slow) var(--ease-out) both;
+  animation-delay: calc(60ms + var(--i, 0) * 22ms);
+}
+.ntp-panel .swatch,
+.row,
+.list-row {
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+.settings-content > * {
+  animation: fade var(--dur) var(--ease);
+}
