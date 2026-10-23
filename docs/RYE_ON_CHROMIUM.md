@@ -123,19 +123,46 @@ lines of output.
 
 ## Phase 2 — Turn Chromium into Rye (name and icons)
 
-Rye's changes are kept as small patch files in this repository under `chromium/`,
-applied on top of a pinned Chromium version. Brave and ungoogled-chromium work the
-same way, and it keeps updating Chromium manageable.
+`chromium/apply_branding.py` changes the product name, every user-visible string,
+in all languages, and the icons (taskbar, window, installer and Start tiles) to
+Rye's. It only edits files that already exist, so it's safe to re-run, and
+`git checkout -- chrome/app` in the Chromium checkout undoes all of it.
 
-This phase changes:
-- **Product name:** `chrome/app/theme/chromium/BRANDING` and the product strings in
-  `chrome/app/chromium_strings.grd` ("Chromium" → "Rye").
-- **Icons:** `chrome/app/theme/chromium/` (the PNG logos and the Windows `.ico`),
-  generated from `build/icon.svg` in this repo.
-- **Installer:** `autoninja -C out\Rye mini_installer` produces
-  `mini_installer.exe`, Rye's Windows installer.
+1. Get this repository onto your PC, anywhere outside the Chromium folder:
 
-I'll write these patches against the exact Chromium version you built in Phase 1.
+   ```
+   cd C:\src
+   git clone https://github.com/yeezeedonthavekids-gif/Rye.git rye
+   cd rye
+   git checkout claude/rye-browser
+   ```
+
+2. Preview, then apply:
+
+   ```
+   python3 C:\src\rye\chromium\apply_branding.py C:\src\chromium\src --check
+   python3 C:\src\rye\chromium\apply_branding.py C:\src\chromium\src
+   ```
+
+3. Rebuild. Only the affected parts recompile, so this is much faster than the
+   first build:
+
+   ```
+   cd C:\src\chromium\src
+   autoninja -C out\Rye chrome
+   out\Rye\chrome.exe
+   ```
+
+   The window, taskbar and "About" page should now say Rye, with Rye's icon.
+
+4. Build the Windows installer:
+
+   ```
+   autoninja -C out\Rye mini_installer
+   ```
+
+   This produces `out\Rye\mini_installer.exe`. Running it installs Rye like any
+   other app.
 
 ## Phase 3 — Rye's look and features
 
