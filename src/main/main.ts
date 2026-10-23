@@ -556,4 +556,8 @@ app.whenReady().then(async () => {
 });
 
 // Test hook: lets the automated UI tests drive real windows. Only present when RYE_TEST is set.
-if (process.env.RYE_TEST) (globalThis as any).__rye = { RyeWindow, settings, bookmarks, history, downloads };
+if (process.env.RYE_TEST) {
+  (globalThis as any).__rye = { RyeWindow, settings, bookmarks, history, downloads };
+  // A scenario file can drive the app without attaching a debugger (which sites may treat as automation).
+  if (process.env.RYE_TEST_SCRIPT) app.whenReady().then(() => setTimeout(() => require(process.env.RYE_TEST_SCRIPT!)((globalThis as any).__rye), 1500));
+}
