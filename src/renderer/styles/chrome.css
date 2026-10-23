@@ -1,0 +1,770 @@
+/* The browser frame. Rye's composition: one continuous "mat" (the frame colour)
+   on which a few raised surfaces rest — the active tab, the address capsule and,
+   largest of all, the page sheet. No dividers; depth comes from surface + shadow. */
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+  background: var(--frame);
+  user-select: none;
+}
+
+.shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--frame);
+  transition: background-color var(--dur-slow) var(--ease);
+}
+.shell.vertical {
+  flex-direction: row;
+}
+
+/* ─── Tab strip (horizontal) ─────────────────────────────────────────────── */
+.tabstrip {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: var(--tabstrip-h);
+  padding: 0 0 0 var(--mat);
+  -webkit-app-region: drag;
+}
+[data-platform='darwin'] .tabstrip .traffic-space {
+  width: 72px;
+  flex: none;
+}
+.strip-drag {
+  flex: 1;
+  align-self: stretch;
+  min-width: 36px;
+}
+.tabs-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--tab-gap);
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 5px 3px;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs-wrap[data-fade-left='true'] .tabs {
+  mask-image: linear-gradient(to right, transparent, #000 28px);
+}
+.tabs-wrap[data-fade-right='true'] .tabs {
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+.tabs-wrap[data-fade-left='true'][data-fade-right='true'] .tabs {
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+.new-tab {
+  -webkit-app-region: no-drag;
+}
+
+/* ─── Tab ────────────────────────────────────────────────────────────────── */
+.tab {
+  -webkit-app-region: no-drag;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  width: 216px;
+  min-width: 92px;
+  height: var(--tab-h);
+  padding: 0 5px 0 10px;
+  border-radius: var(--r-tab);
+  color: var(--text-2);
+  font-weight: 480;
+  white-space: nowrap;
+  animation: tab-in var(--dur) var(--ease-out);
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease-out);
+}
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+.tab:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.tab[data-active='true'] {
+  background: var(--raised);
+  color: var(--text);
+  box-shadow: var(--shadow-1);
+}
+[data-theme='dark'] .tab[data-active='true'] {
+  box-shadow: var(--shadow-1), inset 0 1px 0 var(--highlight);
+}
+[data-tab-shape='quiet'] .tab[data-active='true'] {
+  background: var(--press);
+  box-shadow: none;
+}
+.tab[data-compact='true'] {
+  flex: none;
+  justify-content: center;
+  width: calc(var(--tab-h) + 6px);
+  min-width: 0;
+  padding: 0;
+}
+.tab[data-dragging='true'] {
+  z-index: 3;
+  transition: none;
+  box-shadow: var(--shadow-2);
+  background: var(--raised);
+}
+.tabs[data-settling='true'] .tab,
+.vtabs[data-settling='true'] .tab {
+  transition: none !important;
+  animation: none;
+}
+.tab-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.tab[data-sleeping='true'] .tab-icon {
+  opacity: 0.55;
+  filter: grayscale(0.7);
+}
+.tab[data-sleeping='true'] .tab-title {
+  color: var(--text-3);
+}
+.tab-mark {
+  color: var(--accent-text);
+}
+.tab-glyph {
+  color: var(--text-2);
+}
+.tab-warn {
+  color: var(--warning);
+}
+.tab-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1.75px solid var(--hairline-strong);
+  border-top-color: var(--accent);
+  animation: spin 760ms linear infinite;
+}
+.tab-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs);
+  mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent);
+}
+.tab-close,
+.tab-audio {
+  color: var(--text-3);
+  opacity: 0;
+}
+.tab-audio {
+  opacity: 1;
+}
+.tab:hover .tab-close,
+.tab[data-active='true'] .tab-close {
+  opacity: 1;
+}
+.tab-close:hover,
+.tab-audio:hover {
+  color: var(--text);
+}
+
+/* ─── Vertical tabs / sidebar ───────────────────────────────────────────── */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  width: var(--sidebar-w);
+  padding: 0 0 var(--mat) var(--mat);
+  transition: width var(--dur-slow) var(--ease-out);
+  -webkit-app-region: drag;
+}
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: none;
+  height: var(--toolbar-h);
+  padding: 0 4px 0 2px;
+}
+.sidebar-head .icon-btn {
+  -webkit-app-region: no-drag;
+}
+.shell[data-collapsed='true'] .sidebar-head {
+  justify-content: center;
+}
+[data-platform='darwin'] .sidebar-head .traffic-space {
+  flex: 1;
+  min-width: 66px;
+}
+[data-platform='darwin'] .shell[data-collapsed='true'] .sidebar-head {
+  padding-top: 26px;
+  height: calc(var(--toolbar-h) + 26px);
+}
+[data-platform='darwin'] .shell[data-collapsed='true'] .sidebar-head .traffic-space {
+  display: none;
+}
+.vtabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tab-gap);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 4px 8px 2px;
+  -webkit-app-region: no-drag;
+  scrollbar-width: thin;
+}
+.vtabs .tab {
+  flex: none;
+  width: 100%;
+  min-width: 0;
+}
+.vtabs[data-collapsed='true'] .tab {
+  justify-content: center;
+  padding: 0;
+}
+.vtab-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  width: 100%;
+  height: var(--tab-h);
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-tab);
+  background: transparent;
+  color: var(--text-3);
+  text-align: left;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.vtab-new:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.vtabs[data-collapsed='true'] .vtab-new {
+  justify-content: center;
+  padding: 0;
+}
+.column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.top {
+  -webkit-app-region: drag;
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+  height: var(--toolbar-h);
+  padding: 0 calc(var(--mat) + 1px);
+  -webkit-app-region: drag;
+}
+.toolbar button,
+.toolbar input,
+.toolbar .address,
+.toolbar .findbar,
+.toolbar .private-badge {
+  -webkit-app-region: no-drag;
+}
+.nav-group,
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: none;
+}
+.address-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ─── Address capsule ───────────────────────────────────────────────────── */
+.address {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 1;
+  min-width: 150px;
+  height: calc(var(--toolbar-h) - 10px);
+  padding: 0 3px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--raised) 56%, var(--frame));
+  transition:
+    background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.address:hover {
+  background: color-mix(in srgb, var(--raised) 78%, var(--frame));
+}
+.address[data-focused='true'] {
+  background: var(--raised);
+  box-shadow: var(--shadow-2), 0 0 0 1px color-mix(in srgb, var(--accent), transparent 55%);
+}
+.address-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: calc(100% - 8px);
+  padding: 0 8px;
+  border: 0;
+  border-radius: calc(var(--r-md) - 3px);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 550;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.address-chip:hover {
+  background: var(--hover);
+  color: var(--text-2);
+}
+.address-chip[data-kind='insecure'] {
+  color: var(--warning);
+}
+.address-chip[data-kind='internal'] {
+  color: var(--accent-text);
+}
+.address-chip[data-kind='internal'] .chip-label {
+  color: var(--text-2);
+}
+.chip-label {
+  white-space: nowrap;
+}
+.address-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+.address-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 6px 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: calc(var(--fs) + 0.5px);
+  user-select: text;
+}
+.address-input:focus-visible,
+.find-input:focus-visible {
+  box-shadow: none;
+}
+.address-input::placeholder {
+  color: var(--text-3);
+}
+.address[data-display='true'] .address-input {
+  color: transparent;
+}
+.address-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--text-3);
+  font-size: calc(var(--fs) + 0.5px);
+  cursor: text;
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+}
+.address-display .host {
+  color: var(--text);
+  font-weight: 500;
+}
+.address-pill {
+  flex: none;
+  height: 22px;
+  padding: 0 8px;
+  margin-right: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.address-pill:hover {
+  background: var(--press);
+  color: var(--text);
+}
+.address-star {
+  color: var(--text-3);
+}
+.address-star[data-on='true'] {
+  color: var(--accent);
+}
+
+/* ─── Find ───────────────────────────────────────────────────────────────── */
+.findbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 1 300px;
+  min-width: 190px;
+  height: calc(var(--toolbar-h) - 10px);
+  padding: 0 5px 0 10px;
+  border-radius: var(--r-md);
+  background: var(--raised);
+  box-shadow: var(--shadow-1);
+  animation: find-in var(--dur) var(--ease-out);
+}
+@keyframes find-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(8px * var(--lift, 1)));
+  }
+}
+.find-icon {
+  flex: none;
+  color: var(--text-3);
+}
+.find-input {
+  flex: 1;
+  min-width: 40px;
+  height: 100%;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  user-select: text;
+}
+.find-input::placeholder {
+  color: var(--text-3);
+}
+.find-count {
+  flex: none;
+  min-width: 34px;
+  padding-right: 4px;
+  text-align: right;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+.findbar[data-empty] .find-count {
+  color: var(--danger);
+}
+
+/* ─── Toolbar extras ─────────────────────────────────────────────────────── */
+.private-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  margin: 0 4px;
+  padding: 0 9px 0 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.dl-btn .dl-ring {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.dl-btn .dl-ring circle:last-child {
+  transition: stroke-dasharray var(--dur-slow) var(--ease);
+}
+.dl-ring[data-indeterminate='true'] {
+  animation: spin-centered 1s linear infinite;
+}
+@keyframes spin-centered {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+.dl-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--frame);
+}
+
+/* ─── Window controls ───────────────────────────────────────────────────── */
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 0 calc(var(--mat) + 2px) 0 8px;
+  -webkit-app-region: no-drag;
+}
+.toolbar .window-controls {
+  padding-right: 0;
+}
+.wc-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.wc-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.wc-btn.close:hover {
+  background: #d4584b;
+  color: #fff;
+}
+.wco-space {
+  flex: none;
+  align-self: stretch;
+  width: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw));
+}
+
+/* ─── Bookmarks bar ─────────────────────────────────────────────────────── */
+.bookmarks-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  height: var(--bookmarks-h);
+  padding: 0 calc(var(--mat) + 3px) 2px;
+  overflow: hidden;
+  animation: fade var(--dur) var(--ease);
+}
+.bm {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  max-width: 190px;
+  height: calc(var(--bookmarks-h) - 6px);
+  padding: 0 9px 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.bm:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.bm:active {
+  background: var(--press);
+}
+.bm-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bm-folder {
+  color: var(--text-3);
+}
+.bm-more {
+  margin-left: auto;
+}
+.bookmarks-empty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+}
+
+/* ─── Page slot ──────────────────────────────────────────────────────────── */
+.slot-wrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 0 var(--mat) var(--mat);
+}
+.slot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--r-sheet);
+  background: var(--sheet);
+  box-shadow: var(--sheet-shadow);
+  transition: background-color var(--dur-slow) var(--ease);
+}
+.shell[data-hidden='true'] .tabstrip,
+.shell[data-hidden='true'] .toolbar,
+.shell[data-hidden='true'] .bookmarks-bar,
+.shell[data-hidden='true'] .sidebar {
+  display: none;
+}
+.shell[data-hidden='true'] .slot-wrap {
+  padding: 0;
+}
+.shell[data-hidden='true'] .slot {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* The loading line traces the top edge of the page sheet. */
+.progress {
+  position: absolute;
+  top: -3px;
+  left: calc(var(--mat) + var(--r-sheet));
+  right: calc(var(--mat) + var(--r-sheet));
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(var(--p, 0));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dur-slow) var(--ease-out),
+    opacity 380ms var(--ease) 120ms;
+}
+.progress[data-loading='true'] {
+  opacity: 1;
+  transition:
+    transform 420ms var(--ease-out),
+    opacity var(--dur-fast) var(--ease);
+}
+
+/* ─── Error view (drawn behind a hidden page) ───────────────────────────── */
+.error-view {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 32px;
+  background: var(--sheet);
+  user-select: text;
+  animation: fade var(--dur-slow) var(--ease);
+}
+.error-card {
+  width: 100%;
+  max-width: 460px;
+}
+.error-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.error-card h1 {
+  margin: 20px 0 8px;
+  font-size: calc(var(--fs) + 9px);
+  font-weight: 650;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+}
+.error-card p {
+  margin: 0 0 8px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+.error-note {
+  font-size: var(--fs-sm);
+}
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.error-proceed {
+  margin-top: 16px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+.error-code {
+  margin-top: 26px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+.spinner.light {
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: var(--accent-ink);
+}
+
+/* ─── Narrow windows ─────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .toolbar {
+    gap: 4px;
+  }
+  .findbar {
+    flex-basis: 220px;
+  }
+  .chip-label {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .address-row:has(.findbar) .address {
+    display: none;
+  }
+  .findbar {
+    flex: 1;
+  }
+}

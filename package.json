@@ -1,0 +1,106 @@
+{
+  "name": "rye",
+  "productName": "Rye",
+  "version": "0.1.0",
+  "description": "Rye \u2014 a soft, private, customizable Chromium browser.",
+  "author": "Rye",
+  "license": "MIT",
+  "private": true,
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build:main": "node scripts/build-main.mjs",
+    "build:renderer": "vite build",
+    "build": "npm run typecheck && npm run build:main && npm run build:renderer",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start": "npm run build && electron .",
+    "dev": "npm run build:main && npm run build:renderer && electron .",
+    "icons": "electron scripts/render-icons.mjs",
+    "dist:win": "npm run build && electron-builder --win nsis --x64",
+    "dist:dir": "npm run build && electron-builder --dir",
+    "dist:linux": "npm run build && electron-builder --linux AppImage"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2",
+    "lucide-react": "^1.61.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.5"
+  },
+  "build": {
+    "appId": "app.rye.browser",
+    "productName": "Rye",
+    "copyright": "Rye",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "build/icon.png",
+      "package.json",
+      "!**/*.map"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Rye-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Rye",
+      "uninstallDisplayName": "Rye",
+      "createDesktopShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Network",
+      "icon": "build/icon.png"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png"
+    },
+    "protocols": [
+      {
+        "name": "Web",
+        "schemes": [
+          "http",
+          "https"
+        ]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "html",
+          "htm"
+        ],
+        "name": "HTML document",
+        "role": "Viewer"
+      }
+    ]
+  }
+}
