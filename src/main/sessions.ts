@@ -5,6 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { INTERNAL_PAGES } from '../shared/defaults';
 import { originOf } from '../shared/url';
+import { compatUserAgent, needsCompatUA } from './compat';
 import { downloads } from './downloads';
 import { AUTO_ALLOW, PERMISSION_LABELS, PROMPTED, permissions } from './permissions';
 import { settings } from './settings';
@@ -105,16 +106,25 @@ function configure(ses: Session, isPrivate: boolean) {
   applyPrivacyHeaders(ses);
 }
 
-/** Global Privacy Control header, applied per session and updated when the setting changes. */
+/**
+ * Outgoing request headers: the Global Privacy Control signal (when enabled) and
+ * the sign-in compatibility identity, which must also be undone on the first
+ * request after a tab leaves the sign-in host. Electron allows one listener per
+ * session, so both live here.
+ */
 export function applyPrivacyHeaders(ses: Session) {
-  if (settings.get().privacy.sendGpc) {
-    ses.webRequest.onBeforeSendHeaders((details, cb) => {
-      details.requestHeaders['Sec-GPC'] = '1';
-      cb({ requestHeaders: details.requestHeaders });
-    });
-  } else {
-    ses.webRequest.onBeforeSendHeaders(null);
-  }
+  const gpc = settings.get().privacy.sendGpc;
+  ses.webRequest.onBeforeSendHeaders({ urls: ['*://*/*'] }, (details, cb) => {
+    const h = details.requestHeaders;
+    if (gpc) h['Sec-GPC'] = '1';
+    if (needsCompatUA(details.url)) {
+      h['User-Agent'] = compatUserAgent();
+      for (const k of Object.keys(h)) if (/^sec-ch-ua/i.test(k)) delete h[k];
+    } else if (h['User-Agent'] === compatUserAgent()) {
+      h['User-Agent'] = app.userAgentFallback;
+    }
+    cb({ requestHeaders: h });
+  });
 }
 
 export function defaultTabSession(): Session {

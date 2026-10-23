@@ -1,4 +1,5 @@
-import { WebContentsView, type WebContents } from 'electron';
+import { app, WebContentsView, type WebContents } from 'electron';
+import { compatUserAgent, needsCompatUA } from './compat';
 import path from 'node:path';
 import { INTERNAL_TITLES } from '../shared/defaults';
 import type { SecurityState, TabErrorInfo, TabState } from '../shared/types';
@@ -132,6 +133,12 @@ export class Tab {
     wc.on('did-start-navigation', (details) => {
       if (!details.isMainFrame || details.isSameDocument) return;
       this.applySheetColor(details.url);
+      // Keep navigator.userAgent consistent with the request headers on sign-in pages.
+      const compat = needsCompatUA(details.url);
+      if (compat !== this.compatUA) {
+        this.compatUA = compat;
+        wc.setUserAgent(compat ? compatUserAgent() : app.userAgentFallback);
+      }
       this.setProgress(0.25);
     });
     wc.on('dom-ready', () => this.setProgress(0.7));
@@ -235,6 +242,7 @@ export class Tab {
   }
 
   closing = false;
+  private compatUA = false;
   private closeTimer: NodeJS.Timeout | null = null;
 
   /** Closes the tab, giving the page a chance to warn about unsaved changes. */
