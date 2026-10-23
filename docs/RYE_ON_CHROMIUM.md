@@ -93,6 +93,17 @@ gn gen out\Rye --args="is_debug=false is_component_build=true symbol_level=0 bli
 autoninja -C out\Rye chrome
 ```
 
+**With 16 GB of RAM or less:** linking can run out of memory near the end.
+- Set a fixed page file of 32 GB (32768 MB) on an SSD under System Properties →
+  Advanced → Performance → Settings → Advanced → Virtual memory.
+- If the build still fails with an out-of-memory error or the PC stalls, lower the
+  parallel jobs and rerun: `autoninja -C out\Rye -j 8 chrome`. It resumes where it
+  stopped.
+
+**Using another drive:** you can put everything on a second SSD (for example
+`D:\src` instead of `C:\src`). Keep the path free of spaces, update the `PATH`
+entry for depot_tools, and exclude that folder from Defender instead.
+
 ### 4. Run it and test sign-in
 
 ```
