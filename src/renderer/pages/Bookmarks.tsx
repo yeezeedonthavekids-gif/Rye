@@ -151,7 +151,7 @@ export default function BookmarksPage() {
             >
               {b.type === 'folder' ? <Icon name="folder" size={16} className="muted" /> : <Favicon src={b.favicon} url={b.url} title={b.title} />}
               <span className="list-title">{b.title}</span>
-              <span className="list-detail">{b.type === 'folder' ? `${kids(b.id).length} items` : displayUrl(b.url ?? '')}</span>
+              <span className="list-detail">{b.type === 'folder' ? `${kids(b.id).length} item${kids(b.id).length === 1 ? '' : 's'}` : displayUrl(b.url ?? '')}</span>
               <button type="button" className="icon-btn sm list-action" aria-label="Edit" onClick={(e) => (e.stopPropagation(), setEdit({ item: b, kind: b.type }))}>
                 <Icon name="pencil" size={14} />
               </button>

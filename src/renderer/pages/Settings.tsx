@@ -90,7 +90,7 @@ function Preview({ s }: { s: Settings }) {
 
 function PresetCard({ id, name, description, active }: { id: string; name: string; description: string; active: boolean }) {
   const p = PRESETS.find((x) => x.id === id)!;
-  const dark = p.values.theme === 'dark' || (p.values.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  const dark = p.values.theme === 'dark' || (p.values.theme === 'system' && document.documentElement.dataset.theme === 'dark');
   const t = computeTheme({ ...(p.values as any), roundness: p.values.roundness ?? 60, density: 'comfortable', floatingPage: true }, dark).vars;
   return (
     <button type="button" className="preset" aria-pressed={active} onClick={() => rye.invoke('settings:preset', id)}>

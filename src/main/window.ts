@@ -194,7 +194,7 @@ export class RyeWindow {
     const t = this.theme();
     this.win.setBackgroundColor(t.frame);
     if (process.platform === 'win32') this.win.setTitleBarOverlay({ color: t.frame, symbolColor: t.text, height: this.titlebarHeight });
-    for (const tab of this.tabs) tab.view?.setBackgroundColor(t.sheet);
+    for (const tab of this.tabs) tab.applySheetColor(tab.url);
     const payload = this.themePayload();
     this.win.webContents.send('ui:theme', payload);
     this.overlay.webContents.send('ui:theme', payload);

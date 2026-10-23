@@ -199,7 +199,8 @@ export function letterFor(url?: string, title?: string) {
   try {
     if (url) {
       const h = new URL(url).hostname.replace(/^www\./, '');
-      if (h) return h[0];
+      // IP addresses and localhost say nothing as a letter; prefer the page title.
+      if (h && !/^[\d.[\]:]+$|^localhost$/.test(h)) return h[0];
     }
   } catch {
     /* ignore */

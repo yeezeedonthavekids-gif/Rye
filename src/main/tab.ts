@@ -105,8 +105,7 @@ export class Tab {
         });
     this.view = view;
     this.contents = view.webContents;
-    const theme = this.win.theme();
-    view.setBackgroundColor(theme.sheet);
+    this.applySheetColor(this.url);
     view.setBorderRadius(this.win.sheetRadius());
     this.bind(view.webContents);
 
@@ -132,6 +131,7 @@ export class Tab {
     });
     wc.on('did-start-navigation', (details) => {
       if (!details.isMainFrame || details.isSameDocument) return;
+      this.applySheetColor(details.url);
       this.setProgress(0.25);
     });
     wc.on('dom-ready', () => this.setProgress(0.7));
@@ -250,6 +250,14 @@ export class Tab {
     this.closeTimer = setTimeout(() => {
       if (this.closing) this.win.tabDestroyed(this);
     }, 2500);
+  }
+
+  /**
+   * Web pages without their own background are white in every browser, so web
+   * content always gets a white canvas; only Rye's own pages use the themed sheet.
+   */
+  applySheetColor(url: string) {
+    this.view?.setBackgroundColor(isInternal(url) ? this.win.theme().sheet : '#ffffff');
   }
 
   private setProgress(p: number) {
