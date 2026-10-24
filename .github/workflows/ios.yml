@@ -58,6 +58,9 @@ jobs:
             gh release create ios-preview Rye.ipa --prerelease --target "$GITHUB_SHA" \
               --title "Rye for iPhone (preview)" --notes "$notes"
           fi
+          # Also attach it to the Rye 1.0 release, next to the Windows installer.
+          cp Rye.ipa Rye-1.0-iPhone.ipa
+          gh release upload v1.0.0 Rye-1.0-iPhone.ipa --clobber
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

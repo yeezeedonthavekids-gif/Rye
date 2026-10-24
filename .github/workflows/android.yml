@@ -48,3 +48,6 @@ jobs:
             gh release create android-preview Rye.apk --prerelease --target "$GITHUB_SHA" \
               --title "Rye for Android (preview)" --notes "$notes"
           fi
+          # Also attach it to the Rye 1.0 release, next to the Windows installer.
+          cp Rye.apk Rye-1.0-Android.apk
+          gh release upload v1.0.0 Rye-1.0-Android.apk --clobber
