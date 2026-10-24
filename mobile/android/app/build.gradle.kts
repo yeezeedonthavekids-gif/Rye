@@ -7,6 +7,8 @@ plugins {
 }
 
 android {
+    // Lint crashes on a newer AndroidX library (NonNullableMutableLiveDataDetector); skip it for release.
+    lint { checkReleaseBuilds = false }
     namespace = "app.rye.browser"
     compileSdk = 35
 
