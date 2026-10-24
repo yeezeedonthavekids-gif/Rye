@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rye — a calm browser you make your own</title>
+<meta name="description" content="Rye is a quick, quiet browser built on Chromium. Your colors, your corners, a new tab page that greets you by name, and about half the memory. Free for Windows, Android and iPhone.">
+<meta property="og:title" content="Rye — a calm browser you make your own">
+<meta property="og:description" content="A quick, quiet browser built on Chromium. Free for Windows, Android and iPhone.">
+<meta property="og:image" content="img/hero.jpg">
+<meta name="theme-color" content="#1c1b19">
+<link rel="icon" type="image/png" href="img/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --frame: #1c1b19;
+  --base: #222120;
+  --sheet: #252321;
+  --raised: #2d2a28;
+  --line: #34312e;
+  --text: #eeeded;
+  --text2: #b8b5b2;
+  --text3: #8a8682;
+  --accent: #7593b4;
+  --on-accent: #141210;
+  --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --r: 14px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--frame);
+  color: var(--text);
+  font: 16px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+
+/* Nav */
+nav { display: flex; align-items: center; gap: 28px; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; font-size: 17px; }
+.brand img { width: 28px; height: 28px; border-radius: 8px; }
+nav .links { margin-left: auto; display: flex; gap: 24px; font-size: 15px; }
+nav .links a { color: var(--text2); text-decoration: none; }
+nav .links a:hover { color: var(--text); }
+
+/* Hero */
+.hero { padding: 72px 0 0; text-align: center; }
+.hero h1 {
+  font: 400 clamp(44px, 7vw, 76px)/1.05 var(--serif);
+  letter-spacing: -0.02em;
+  margin: 0 auto;
+  max-width: 15ch;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero p.lede { color: var(--text2); font-size: 19px; max-width: 34em; margin: 22px auto 0; }
+.cta { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 34px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--accent); color: var(--on-accent);
+  padding: 13px 22px; border-radius: 999px;
+  font-weight: 600; text-decoration: none; font-size: 16px;
+}
+.btn:hover { background: #86a2c1; }
+.btn svg { width: 18px; height: 18px; }
+.quiet { color: var(--text2); font-size: 15px; }
+.cta small { display: block; width: 100%; color: var(--text3); font-size: 13px; margin-top: -4px; }
+
+/* Browser frame around the screenshot, drawn the way Rye draws itself:
+   the page floats as a rounded sheet inside the window. */
+.window {
+  margin: 64px auto 0;
+  max-width: 1040px;
+  background: var(--frame);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 0 10px 10px;
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,.7);
+}
+.tabs { display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 6px; }
+.dots { display: flex; gap: 7px; margin-right: 12px; }
+.dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--raised); }
+.tab {
+  display: flex; align-items: center; gap: 8px;
+  height: 30px; padding: 0 14px; border-radius: 10px 10px 0 0;
+  font-size: 13px; color: var(--text3);
+}
+.tab.on { background: var(--base); color: var(--text); }
+.tab img { width: 14px; height: 14px; border-radius: 4px; }
+.toolbar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--base); border-radius: 0 12px 0 0;
+  padding: 8px 10px 10px;
+}
+.toolbar .omni {
+  flex: 1; height: 32px; border-radius: 10px; background: var(--frame);
+  display: flex; align-items: center; padding: 0 14px; font-size: 13px; color: var(--text3);
+}
+.toolbar b { width: 26px; height: 26px; border-radius: 8px; background: var(--raised); opacity: .6; }
+.sheet { background: var(--base); padding: 0 8px 8px; border-radius: 0 0 14px 14px; }
+.sheet img { border-radius: 12px; width: 100%; aspect-ratio: 1600 / 844; object-fit: cover; }
+
+/* Sections */
+section { padding: 120px 0 0; }
+.kicker { color: var(--accent); font-size: 14px; font-weight: 600; letter-spacing: .02em; }
+h2 { font: 400 clamp(34px, 4.6vw, 50px)/1.1 var(--serif); letter-spacing: -0.015em; margin: 10px 0 0; max-width: 18ch; }
+.sub { color: var(--text2); font-size: 18px; max-width: 36em; margin: 18px 0 0; }
+
+/* Memory comparison */
+.memory { display: grid; grid-template-columns: 1fr 1.2fr; gap: 64px; align-items: center; }
+.bars { display: grid; gap: 22px; }
+.bar .label { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px; }
+.bar .label span:last-child { color: var(--text2); font-variant-numeric: tabular-nums; }
+.bar .track { height: 14px; border-radius: 7px; background: var(--sheet); overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 7px; background: var(--text3); }
+.bar.rye .fill { background: var(--accent); }
+.bars .note { color: var(--text3); font-size: 13px; }
+
+/* Looks */
+.looks { margin-top: 40px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--sheet); color: var(--text2);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 8px 15px 8px 10px; font: 500 14px var(--sans); cursor: pointer;
+}
+.chip i { width: 14px; height: 14px; border-radius: 50%; }
+.chip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: var(--raised); }
+.stage { margin-top: 22px; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: var(--sheet); }
+.stage img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.caption { color: var(--text3); font-size: 14px; margin-top: 12px; }
+
+/* Features */
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; margin-top: 48px; }
+.feature { background: var(--frame); padding: 30px 28px 32px; }
+.feature h3 { font: 500 17px/1.35 var(--sans); margin: 0 0 8px; }
+.feature p { margin: 0; color: var(--text2); font-size: 15px; }
+
+/* Split rows */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.split.flip > :first-child { order: 2; }
+.shot { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); }
+ul.plain { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 12px; }
+ul.plain li { padding-left: 22px; position: relative; color: var(--text2); }
+ul.plain li::before { content: ""; position: absolute; left: 0; top: .7em; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+/* Phones */
+.phones { display: flex; gap: 22px; justify-content: center; align-items: flex-start; }
+.phone {
+  width: min(250px, 46%);
+  border-radius: 38px; padding: 9px;
+  background: #111; border: 1px solid var(--line);
+}
+.phone img { border-radius: 30px; }
+.phone:nth-child(2) { margin-top: 48px; }
+
+/* Download */
+.downloads { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; }
+.dl {
+  background: var(--sheet); border: 1px solid var(--line); border-radius: 18px;
+  padding: 26px; display: flex; flex-direction: column;
+}
+.dl.mine { border-color: var(--accent); }
+.dl h3 { font: 500 20px var(--sans); margin: 0; }
+.dl .meta { color: var(--text3); font-size: 14px; margin-top: 4px; }
+.dl p { color: var(--text2); font-size: 15px; margin: 16px 0 22px; flex: 1; }
+.dl .btn { justify-content: center; background: var(--raised); color: var(--text); }
+.dl .btn:hover { background: #38342f; }
+.dl.mine .btn { background: var(--accent); color: var(--on-accent); }
+.dl.mine .btn:hover { background: #86a2c1; }
+.tested { display: inline-flex; align-items: center; gap: 6px; color: #9ec08f; font-size: 13px; margin-top: 14px; }
+.tested svg { width: 14px; height: 14px; }
+
+/* Footer */
+footer { margin-top: 140px; border-top: 1px solid var(--line); padding: 34px 0 48px; color: var(--text3); font-size: 14px; }
+footer .wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+footer .right { margin-left: auto; display: flex; gap: 20px; }
+footer a { text-decoration: none; }
+footer a:hover { color: var(--text); }
+
+@media (max-width: 860px) {
+  nav .links a:not(.gh) { display: none; }
+  .hero { padding-top: 40px; }
+  .window { margin-top: 44px; border-radius: 14px; padding: 0 6px 6px; }
+  .tab:not(.on), .dots, .toolbar b { display: none; }
+  section { padding-top: 88px; }
+  .memory, .split { grid-template-columns: 1fr; gap: 36px; }
+  .split.flip > :first-child { order: 0; }
+  .features, .downloads { grid-template-columns: 1fr; }
+  footer .right { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="img/icon.png" alt="" width="28" height="28">Rye</a>
+    <div class="links">
+      <a href="#looks">Looks</a>
+      <a href="#features">Features</a>
+      <a href="#phones">Phones</a>
+      <a href="#download">Download</a>
+      <a class="gh" href="https://github.com/yeezeedonthavekids-gif/Rye">GitHub</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="hero wrap">
+    <h1>A calm browser you make <em>your own.</em></h1>
+    <p class="lede">Rye is built on Chromium, so your sites, extensions and Google sign-in just work. It greets you by name, wears your colors, and uses about half the memory.</p>
+    <div class="cta">
+      <a class="btn" id="primary" href="#download">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+        <span>Download Rye</span>
+      </a>
+      <a class="quiet" href="#download">Windows, Android and iPhone</a>
+      <small>Free. Version 1.0.</small>
+    </div>
+
+    <div class="window" aria-hidden="true">
+      <div class="tabs">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tab on"><img src="img/icon.png" alt="">New Tab</div>
+        <div class="tab">Wikipedia</div>
+        <div class="tab">YouTube</div>
+      </div>
+      <div class="toolbar"><b></b><b></b><div class="omni">Search or enter an address</div><b></b></div>
+      <div class="sheet"><img src="img/hero.jpg" alt="" width="1600" height="844"></div>
+    </div>
+  </div>
+
+  <section class="wrap memory">
+    <div>
+      <div class="kicker">Light on your computer</div>
+      <h2>About half the memory. Same web.</h2>
+      <p class="sub">Memory Saver is on from the start. Preloading, background AI model downloads and tab-preview screenshots are off. Everything still works; it just isn't running when you don't need it.</p>
+    </div>
+    <div class="bars">
+      <div class="bar rye">
+        <div class="label"><span>Rye</span><span>685 MB</span></div>
+        <div class="track"><div class="fill" style="width:43.5%"></div></div>
+      </div>
+      <div class="bar">
+        <div class="label"><span>Helium</span><span>1,573 MB</span></div>
+        <div class="track"><div class="fill" style="width:100%"></div></div>
+      </div>
+      <div class="note">Private memory with YouTube and a Wikipedia article open, on the same Windows PC. Your numbers will vary.</div>
+    </div>
+  </section>
+
+  <section class="wrap" id="looks">
+    <div class="kicker">Looks</div>
+    <h2>Pick a look. The whole browser follows.</h2>
+    <p class="sub">Tabs, toolbar, menus, dialogs and settings all take the same colors. Choose light, dark or match your system, any accent, and how round you like your corners.</p>
+    <div class="looks">
+      <div class="chips" role="group" aria-label="Looks">
+        <button class="chip" aria-pressed="true" data-shot="look-rye.jpg" data-cap="Rye — warm neutrals and a quiet blue."><i style="background:#7593b4"></i>Rye</button>
+        <button class="chip" aria-pressed="false" data-shot="look-lavender.jpg" data-cap="Lavender, with a note for today."><i style="background:#b39ddb"></i>Lavender</button>
+        <button class="chip" aria-pressed="false" data-shot="look-softlight.jpg" data-cap="Soft Light, left-aligned, with extra-round corners."><i style="background:#e9e4dc"></i>Soft Light</button>
+        <button class="chip" aria-pressed="false" data-shot="look-forest.jpg" data-cap="Forest, over the Ridgeline background."><i style="background:#8fc27e"></i>Forest</button>
+        <button class="chip" aria-pressed="false" data-shot="look-ocean.jpg" data-cap="Ocean, over the Contours background."><i style="background:#4fb6d6"></i>Ocean</button>
+      </div>
+      <div class="stage"><img id="look" src="img/look-rye.jpg" alt="Rye's new tab page in the Rye look" width="1600" height="1000"></div>
+      <div class="caption" id="cap">Rye — warm neutrals and a quiet blue.</div>
+    </div>
+  </section>
+
+  <section class="wrap" id="features">
+    <div class="kicker">What you get</div>
+    <h2>Small things, done with care.</h2>
+    <div class="features">
+      <div class="feature"><h3>A greeting that changes</h3><p>A different line each time you open a tab, set in a proper serif, with your name in it.</p></div>
+      <div class="feature"><h3>Shortcuts with real icons</h3><p>Each site's own icon, or your own image and color. Drag to reorder and group them into collections.</p></div>
+      <div class="feature"><h3>A floating page</h3><p>The page sits as a rounded sheet inside the window, the way Rye has always looked.</p></div>
+      <div class="feature"><h3>Backgrounds</h3><p>Flat artwork and textures, a solid color, or a photo of your own. No stock wallpapers.</p></div>
+      <div class="feature"><h3>Profiles</h3><p>Separate names, looks and new tab pages for work and home, and switch in a click.</p></div>
+      <div class="feature"><h3>Undo for everything</h3><p>Every change in Personalize can be undone or reset. Export your look and bring it to another computer.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap split">
+    <div>
+      <div class="kicker">Personalize</div>
+      <h2>One page for all of it.</h2>
+      <p class="sub">Rye asks five quick questions the first time you open it. Everything after that lives in Personalize, with a live preview beside it.</p>
+      <ul class="plain">
+        <li>Name, greeting style and text color</li>
+        <li>Seven looks, any accent, or monochrome</li>
+        <li>Soft, Rounded or Extra round corners</li>
+        <li>Clock, date, a note for today, bookmarks and history</li>
+      </ul>
+    </div>
+    <div class="shot"><img src="img/personalize.jpg" alt="The Personalize page" width="1600" height="1000" loading="lazy"></div>
+  </section>
+
+  <section class="wrap split flip" id="phones">
+    <div>
+      <div class="kicker">On your phone</div>
+      <h2>The same Rye, in your pocket.</h2>
+      <p class="sub">The new tab page, setup, Personalize and looks come along, with tabs and an address bar at the bottom where your thumb is.</p>
+    </div>
+    <div class="phones">
+      <div class="phone"><img src="img/phone-setup.jpg" alt="Rye's setup on a phone" width="780" height="1520" loading="lazy"></div>
+      <div class="phone"><img src="img/phone.jpg" alt="Rye's new tab page on a phone" width="780" height="1520" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="download">
+    <div class="kicker">Download</div>
+    <h2>Rye 1.0</h2>
+    <p class="sub">Free. Each file is tested on the devices it supports.</p>
+    <div class="downloads">
+      <div class="dl" data-os="windows">
+        <h3>Windows</h3>
+        <div class="meta">Windows 10 and 11 · 171 MB</div>
+        <p>Installs for your account only, with its own Start menu entry. The installer isn't signed yet, so if Windows warns you, choose <em>More info → Run anyway</em>.</p>
+        <a class="btn" href="https://github.com/yeezeedonthavekids-gif/Rye/releases/download/v1.0.0/Rye-1.0-Setup.exe">Download for Windows</a>
+        <span class="tested"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Tested on a Windows 11 PC</span>
+      </div>
+      <div class="dl" data-os="android">
+        <h3>Android</h3>
+        <div class="meta">Android 8 and newer · 170 MB</div>
+        <p>Download the APK on your phone and open it. Allow installs from your browser when Android asks. Runs on Firefox's engine.</p>
+        <a class="btn" href="https://github.com/yeezeedonthavekids-gif/Rye/releases/download/v1.0.0/Rye-1.0-Android.apk">Download APK</a>
+        <span class="tested"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Tested on MuMu Player</span>
+      </div>
+      <div class="dl" data-os="ios">
+        <h3>iPhone and iPad</h3>
+        <div class="meta">iOS 16 and newer · under 1 MB</div>
+        <p>Install with LiveContainer, AltStore or SideStore, which sign the app on your phone. Uses Safari's engine, like every iPhone browser.</p>
+        <a class="btn" href="https://github.com/yeezeedonthavekids-gif/Rye/releases/download/v1.0.0/Rye-1.0-iPhone.ipa">Download IPA</a>
+        <span class="tested"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>Tested in LiveContainer</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap split">
+    <div>
+      <div class="kicker">Privacy</div>
+      <h2>Your name stays on your computer.</h2>
+    </div>
+    <ul class="plain">
+      <li>Rye has no telemetry of its own.</li>
+      <li>Your name, shortcuts, photo and settings are stored on your device and nowhere else.</li>
+      <li>Site icons come from the sites you add, and only once.</li>
+      <li>Background model downloads and page preloading are off.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Rye 1.0 · Built on Chromium</span>
+    <div class="right">
+      <a href="https://github.com/yeezeedonthavekids-gif/Rye">Source</a>
+      <a href="https://github.com/yeezeedonthavekids-gif/Rye/releases">Releases</a>
+      <a href="https://github.com/yeezeedonthavekids-gif/Rye/issues">Report a problem</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Look switcher.
+const look = document.getElementById('look');
+const cap = document.getElementById('cap');
+document.querySelectorAll('.chip').forEach((chip) => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', c === chip));
+    look.src = 'img/' + chip.dataset.shot;
+    look.alt = "Rye's new tab page in the " + chip.textContent.trim() + ' look';
+    cap.textContent = chip.dataset.cap;
+  });
+});
+// Preload the other looks once the page is idle.
+addEventListener('load', () => document.querySelectorAll('.chip').forEach((c) => { new Image().src = 'img/' + c.dataset.shot; }));
+
+// Point the main button at this visitor's download.
+const ua = navigator.userAgent;
+const os = /Android/i.test(ua) ? 'android'
+  : /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios'
+  : 'windows';
+{
+  const card = document.querySelector('.dl[data-os="' + os + '"]');
+  card.classList.add('mine');
+  const link = card.querySelector('.btn');
+  const primary = document.getElementById('primary');
+  primary.href = link.href;
+  primary.querySelector('span').textContent = { windows: 'Download for Windows', android: 'Download for Android', ios: 'Download for iPhone' }[os];
+}
+</script>
+</body>
+</html>

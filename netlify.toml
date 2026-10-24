@@ -1,0 +1,10 @@
+# Rye's website: a static page in site/, no build step.
+[build]
+  base = "site"
+  publish = "."
+  command = "echo 'Static site, nothing to build'"
+
+[[headers]]
+  for = "/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
