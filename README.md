@@ -1,80 +1,146 @@
 # Rye
 
-A soft, private, customizable desktop browser built on Chromium (via Electron).
+A calm, quick browser you make your own. Rye is built from Chromium's source,
+the same foundation as Chrome, Edge and Brave, so sites, extensions and Google
+sign-in work like they do in Chrome. On top of that it has its own look,
+personal new tab page, and lighter defaults.
 
-## Run
+## Download
 
-```bash
-npm install
-npm start            # typecheck, build, launch
-npm run dist:win     # Windows installer (NSIS) — run on Windows or in CI
-npm run dist:linux   # Linux AppImage
+Get **Rye-1.0-Setup.exe** from the [Releases](../../releases) page and run it.
+It installs for your user account only, in `%LOCALAPPDATA%\Rye`, with its own
+Start menu entry.
+
+The installer isn't code-signed yet, so Windows may show "Windows protected
+your PC". Choose **More info → Run anyway**.
+
+## What's different from Chromium
+
+**Your look, everywhere.** Seven looks (Rye, Midnight, Lavender, Ocean, Forest,
+Sunset and Soft Light), in light, dark or matching Windows. Each one recolors
+the whole browser: tabs, toolbar, address bar, menus, dialogs and settings
+pages. You can pick any accent color, or go monochrome.
+
+**One corner style.** Soft, Rounded or Extra round, applied to tabs, the
+address bar, menus, dialogs and the page, which floats as a rounded sheet
+inside the window.
+
+**A new tab page that's yours.**
+- A different greeting each time, in a serif face, using your name.
+- Search with your choice of engine.
+- Shortcuts with each site's real icon, your own images and colors, drag to
+  reorder, and collections.
+- Optional: a note for today, a dateline and clock, bookmarks, recently and
+  most visited sites.
+- Backgrounds: flat artwork and textures, a solid color, or your own photo.
+
+**Setup and Personalize.** A five-step setup on first launch: your name, a look
+and a few preferences. Everything can be changed later in **Personalize**
+(Customize → All personalization settings), which has a live preview.
+Personalize also has:
+- separate profiles, each with its own name, look and new tab page
+- appearance export and import
+- reset buttons and undo
+
+**Lighter by default.**
+- Memory Saver is on.
+- Page preloading is off.
+- There are no background downloads of Google's optimization or on-device AI
+  models.
+- Tab hover cards don't keep screenshots.
+- The address bar's AI Mode and Lens buttons are hidden.
+
+In a side-by-side test with YouTube and a Wikipedia article open, Rye used
+685 MB of private memory, against 1,573 MB for Helium. Your numbers will vary.
+
+## Build it yourself
+
+You need Windows, about 100 GB of free space, and a few hours for the first
+build. [docs/RYE_ON_CHROMIUM.md](docs/RYE_ON_CHROMIUM.md) walks through every
+step. In short:
+
+```
+:: 1. Get Chromium (see the guide for depot_tools and Visual Studio)
+mkdir C:\src\chromium && cd /d C:\src\chromium
+fetch --no-history chromium
+
+:: 2. Get Rye and apply it
+cd /d C:\src
+git clone https://github.com/yeezeedonthavekids-gif/Rye.git rye
+cd rye && git checkout claude/rye-browser
+python3 C:\src\rye\chromium\apply_rye.py C:\src\chromium\src
+
+:: 3. Build Rye and its installer
+cd /d C:\src\chromium\src
+gn gen out\RyeLite --args="is_debug=false is_component_build=false dcheck_always_on=false symbol_level=0 blink_symbol_level=0 v8_symbol_level=0"
+autoninja -C out\RyeLite chrome mini_installer
 ```
 
-`.github/workflows/build.yml` builds the Windows installer on a Windows runner.
-Building NSIS from Linux needs Wine; without it, `electron-builder --win zip` still
-produces a runnable `Rye.exe`.
+The installer is `out\RyeLite\mini_installer.exe`.
 
-Set `RYE_USER_DATA=<dir>` to use a separate profile and `RYE_DEBUG=1` to log startup
-timing and memory.
+After `git pull`, run `apply_rye.py` again and rebuild. It patches each file
+from Chromium's original and only writes files whose contents change, so
+rebuilds stay small. `--check` shows what would change, and `--skip=` leaves
+out parts (`colors`, `float`, `shape`, `newtab`, `lean`). To undo everything,
+run `git checkout -- chrome components` in the Chromium checkout.
 
-## Architecture
+## How it works
 
-```
-src/main/       Electron main process — windows, tabs, sessions, persistence, IPC
-  window.ts     A browser window: tabs, layout, overlay layer, popups, commands
-  tab.ts        A tab: a WebContentsView created lazily, sleepable, crash/error aware
-  sessions.ts   Storage partitions, permissions, GPC header, rye:// protocol
-  settings.ts   Validated, persisted settings with change events
-  …             history, bookmarks, downloads, permissions, suggestions, shortcuts
-src/preload/    ui.ts (Rye's own UI) and page.ts (bridge exposed only on rye:// pages)
-src/shared/     Types, defaults/presets, URL helpers and the design-token engine
-src/renderer/
-  chrome/       The browser frame: tabs, toolbar, address bar, bookmarks bar
-  overlay/      Menus, popovers, suggestions, tooltips — drawn above the page
-  pages/        rye://newtab, settings, history, bookmarks, downloads
-  ui/           Shared components (toggle, segmented, select, icons…)
-  styles/       base.css (design system) + one stylesheet per surface
-```
+Rye isn't a fork kept in a separate tree. It's a small set of edits that
+`chromium/apply_rye.py` applies to a Chromium checkout:
 
-Each window has three renderer documents: the **frame**, a transparent **overlay** view
-for anything that must float above the page, and one view per **tab**. The frame reports
-where the page sits; the main process positions the tab's view there with rounded
-corners. Errors and crashes are drawn by the frame behind a hidden view, so the address
-bar keeps the real URL.
+| Area | Files in Chromium | What changes |
+| --- | --- | --- |
+| Name and icons | `chrome/app/…` (via `apply_branding.py`) | Product name, every string, all icons |
+| Colors | `ui/color/chrome_color_mixers.cc` | Rye's palette, computed from a surface tint, an accent and light/dark |
+| Settings | `themes/theme_service.cc`, `settings_private/prefs_util.cc` | New `rye.shape` and `rye.surface_color` prefs, which Rye's pages may set |
+| Shape | `layout_constants.cc`, `tab_style.cc`, `chrome_layout_provider.cc`, `multi_contents_view.cc` | Corner style; the floating page |
+| New tab page | `component_loader.cc`, `ntp_features.cc` | Rye's pages built in as a component extension |
+| Lighter defaults | optimization guide, Memory Saver, preloading, hover cards, omnibox | Background work off by default |
+| Installer | `chromium_install_modes.h`, `chrome.release` | Installs as Rye; ships Rye's pages |
 
-## Design system
+Rye's own pages are in [`chromium/extensions/rye-newtab`](chromium/extensions/rye-newtab):
 
-Everything visual comes from `src/shared/theme.ts`, which turns appearance settings into
-CSS variables for the frame, the overlay and every internal page. It also sets the native
-window colours, so a change in Settings reaches every surface at once.
+| File | What it is |
+| --- | --- |
+| `core.js` | Settings and their validation, presets, the palette (it mirrors the C++), greetings, export/import, and the bridge to browser settings |
+| `newtab.*` | The new tab page and its Customize panel |
+| `onboarding.js` | The first-launch setup |
+| `personalize.*` | The Personalize page |
+| `rye.css` | The shared design system |
 
-- **Composition:** a warm "mat" (the frame) carries a few raised surfaces: the active
-  tab, the address capsule, and the page, which floats as a rounded sheet. Depth comes
-  from surface and shadow, not dividers.
-- **Geometry:** one roundness value scales the whole radius ladder (`xs … xl`), so
-  nested corners stay concentric.
-- **Tokens:** tint (warm, neutral, cool), accent, density, tab shape and spacing, font,
-  text size and motion all feed the same token set. Four presets (Minimal, Midnight,
-  Soft Light, Frost) only change visual tokens.
-- **Motion:** 110–260 ms transitions that follow the system reduce-motion setting.
+Pages and browser stay in sync because the pages write Chromium's own prefs
+through `chrome.settingsPrivate`. These are the accent, light/dark, grayscale,
+bookmarks bar and vertical tabs, plus Rye's two prefs. The browser's color
+code reads those same prefs.
 
-## Privacy & security
+## Privacy
 
-- Pages run sandboxed with context isolation and no Node. The page preload exposes a bridge
-  only on `rye://` pages, and the main process checks the sending frame on every call.
-- Web content cannot navigate or frame `rye://` pages. `<webview>` is disabled.
-- Rye's UI uses a separate, cookie-less partition.
-- Private windows share an in-memory partition that is wiped when the last one closes.
-  Their history isn't recorded, and their permissions are forgotten.
-- No telemetry. Search suggestions from your engine are **off by default**.
-- HTTPS-first for typed addresses (with an explicit HTTP fallback), and a Global
-  Privacy Control header.
+- No Rye telemetry. Everything Rye's pages store (your name, shortcuts, photo,
+  settings) stays on your computer.
+- Site icons for shortcuts come from the site itself. They're fetched only for
+  shortcuts you add, and remembered so they aren't requested again.
+- Background model downloads and page preloading are off.
 
 ## Limitations
 
-- Electron supports only part of the Chrome extension APIs. Unpacked extensions load,
-  but toolbar popups and the Web Store don't work.
-- There is no built-in ad or tracker blocking, no sync, and no Widevine, so some DRM
-  video won't play.
-- Clearing cookies and cache clears them entirely. The time range applies to history only.
+- **No automatic updates yet.** Install new releases by hand.
+- **Unsigned installer.** Windows SmartScreen will warn on first run.
+- **Media:** like other Chromium builds, there's no Widevine, so Netflix and
+  other DRM video won't play. Some H.264/AAC video may not play either; YouTube
+  works.
+- **"Sign in to Chrome" sync** needs Google's private API keys, so it isn't
+  available. Signing in to Google websites works normally.
+- **Rye profiles** in Personalize keep their own look and new tab page but
+  share history, passwords and cookies. For fully separate browsing, use
+  Chromium's own profiles.
+- **Corner style:** some parts of windows that are already open update after a
+  restart.
+- **Windows only** for now.
+
+## The Electron version
+
+Rye started as an Electron app, which is still in `src/` (`npm install`,
+`npm start`). Google treats Electron apps as embedded browsers and blocks
+sign-in, which is why Rye moved to Chromium. The Electron version is no longer
+the main one.
