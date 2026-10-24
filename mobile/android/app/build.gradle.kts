@@ -63,6 +63,7 @@ val ryePages = tasks.register("ryePages") {
 tasks.named("preBuild") { dependsOn(ryePages) }
 
 dependencies {
-    implementation("org.mozilla.geckoview:geckoview:+")
+    // Firefox 140 ESR's engine; newer GeckoView needs Android Gradle plugin 9 and SDK 37.
+    implementation("org.mozilla.geckoview:geckoview:[140.0,141.0)")
     implementation("androidx.activity:activity-ktx:1.9.3")
 }
