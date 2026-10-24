@@ -224,12 +224,27 @@
 
     return section(
       'colors', 'Colors', 'Recolors the whole browser: frame, tabs, toolbar, address bar, menus, dialogs and Rye’s pages.',
-      resetPart('Colors', (p, d) => (p.look = { ...p.look, preset: d.look.preset, scheme: d.look.scheme, accentMode: d.look.accentMode, accent: d.look.accent})),
+      resetPart('Colors', (p, d) => (p.look = { ...p.look, preset: d.look.preset, scheme: d.look.scheme, accentMode: d.look.accentMode, accent: d.look.accent, text: d.look.text })),
       group('Theme', presets),
       group(null,
         row('Mode', null, segmented('Light or dark', [['system', 'Match Windows'], ['light', 'Light'], ['dark', 'Dark']], look.scheme, (v) => commit((st, p) => (p.look.scheme = v)))),
         row('Accent', 'Used for focus rings, toggles, selection and highlights. Rye keeps it readable in light and dark.', el('div', {}, accents, hexError)),
+        row('Text color', 'For your greeting, shortcut names and other words on the new tab page. Automatic follows your look and background.', textColors()),
       ),
+    );
+  }
+
+  function textColors() {
+    const current = profile.look.text;
+    const set = (value) => commit((st, p) => (p.look.text = value), { message: 'Text color changed' });
+    const picker = el('input', { type: 'color', value: current || '#f4efe6', 'aria-label': 'Pick a custom text color' });
+    picker.addEventListener('change', () => set(picker.value));
+    return el(
+      'div',
+      { class: 'swatches' },
+      el('button', { class: 'swatch text-swatch auto', type: 'button', title: 'Automatic', 'aria-label': 'Automatic text color', 'aria-pressed': String(!current), onclick: () => set('') }, 'A'),
+      ...R.TEXT_COLORS.map((c) => el('button', { class: 'swatch', type: 'button', title: c.name, 'aria-label': c.name, style: `background:${c.value}`, 'aria-pressed': String(current === c.value), onclick: () => set(c.value) })),
+      el('span', { class: 'swatch custom color-input', title: 'Custom text color', 'aria-pressed': String(!!current && !R.TEXT_COLORS.some((c) => c.value === current)) }, picker),
     );
   }
 

@@ -639,6 +639,19 @@ def patch_omnibox_features(text, src):
         'kAim3pEntrypoint')
 
 
+def patch_startup_infobars(text, src):
+    # Rye isn't built with Google's private API keys (only Google's own
+    # Chrome is), so Chromium's "Google API keys are missing" bar would show
+    # on every start. Rye doesn't use those services; don't show it.
+    old = text[text.find('  if (!google_apis::HasAPIKeyConfigured()) {\n'):]
+    end = old.find('\n  }\n')
+    if not old or end < 0:
+        print('  note: the Google API keys bar was not found, skipped')
+        return text
+    block = old[:end + len('\n  }\n')]
+    return text.replace(block, '  // Rye: no "Google API keys are missing" bar.\n', 1)
+
+
 # ─── Installer identity ──────────────────────────────────────────────────────
 
 def patch_install_modes(text, src):
@@ -752,6 +765,7 @@ PATCHES = [
     ('chrome/browser/preloading/preloading_prefs.cc', patch_preloading),
     ('components/omnibox/browser/omnibox_prefs.cc', patch_omnibox_prefs),
     ('components/omnibox/common/omnibox_features.cc', patch_omnibox_features),
+    ('chrome/browser/ui/startup/infobar_utils.cc', patch_startup_infobars),
     ('chrome/install_static/chromium_install_modes.h', patch_install_modes),
     ('chrome/browser/extensions/component_loader.cc', patch_component_loader),
     ('chrome/installer/mini_installer/chrome.release', patch_release),

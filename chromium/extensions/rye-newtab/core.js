@@ -36,6 +36,14 @@
     { name: 'Rose', value: '#e07a9b' },
   ];
 
+  // Text colors for the new tab page; '' follows the look and background.
+  const TEXT_COLORS = [
+    { name: 'Warm white', value: '#f4efe6' },
+    { name: 'Soft gray', value: '#c9c4bc' },
+    { name: 'Ink', value: '#1f1b16' },
+    { name: 'Sepia', value: '#5a4632' },
+  ];
+
   const ENGINES = {
     default: { name: 'Address bar default', url: null },
     google: { name: 'Google', url: 'https://www.google.com/search?q=%s' },
@@ -92,7 +100,7 @@
       id: uid('p'),
       label: name,
       identity: { name: '', greeting: 'rotating', custom: 'Hello, {name}.' },
-      look: { preset: 'rye', scheme: 'system', accentMode: 'preset', accent: '#6f93c9', gradient: false, shape: 'rounded' },
+      look: { preset: 'rye', scheme: 'system', accentMode: 'preset', accent: '#6f93c9', gradient: false, shape: 'rounded', text: '' },
       layout: {
         style: 'minimal', placement: 'center', searchWidth: 'regular', searchPosition: 'upper',
         shortcutStyle: 'tiles', spacing: 'normal', iconShape: 'auto', bookmarksBar: false, sidebar: false,
@@ -178,6 +186,7 @@
         accentMode: oneOf(l.accentMode, ['preset', 'custom', 'mono'], d.look.accentMode),
         accent: hex(l.accent, d.look.accent),
         gradient: false, // gradient accents were retired
+        text: l.text === '' || l.text === undefined ? '' : hex(l.text, ''),
         shape: oneOf(l.shape, ['soft', 'rounded', 'extra'], d.look.shape),
       },
       layout: {
@@ -656,7 +665,7 @@
   }
 
   window.Rye = {
-    PRESETS, ACCENTS, ENGINES, GALLERY, SHAPES,
+    PRESETS, ACCENTS, TEXT_COLORS, ENGINES, GALLERY, SHAPES,
     uid, defaultProfile, defaultState, sanitizeProfile, sanitizeState,
     load, save, activeProfile, getImage, setImage, onChange, encodeImage,
     palette, applyTokens, isDark, accentOf, hexToHsl, hslToHex, effectiveMotion,

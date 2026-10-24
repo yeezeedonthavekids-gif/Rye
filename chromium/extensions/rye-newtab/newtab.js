@@ -78,6 +78,7 @@
   function render() {
     R.applyTokens(root, profile);
     renderBackground();
+    renderTextColor();
     const stage = $('stage');
     stage.dataset.placement = profile.layout.placement;
     stage.dataset.position = profile.layout.searchPosition;
@@ -114,6 +115,36 @@
       body.style.background = `linear-gradient(rgba(0,0,0,${dim}), rgba(0,0,0,${dim})), url("${bgImage}") center / cover fixed`;
       body.dataset.tone = 'image';
     }
+  }
+
+  function renderTextColor() {
+    const color = profile.look.text;
+    for (const node of [$('stage'), $('corner-actions')]) {
+      if (color) {
+        node.dataset.customText = '';
+        node.style.setProperty('--custom-text', color);
+      } else {
+        delete node.dataset.customText;
+        node.style.removeProperty('--custom-text');
+      }
+    }
+  }
+
+  // Text color swatches, shared by the Customize panel.
+  function textSwatches() {
+    const current = profile.look.text;
+    const set = (value, label) => commit((st, pr) => (pr.look.text = value), { undo: `Text color: ${label}` });
+    const picker = el('input', { type: 'color', value: current || '#f4efe6', 'aria-label': 'Custom text color' });
+    picker.addEventListener('change', () => set(picker.value, 'custom'));
+    return el(
+      'div',
+      { class: 'swatch-row' },
+      el('button', { class: 'swatch text-swatch auto', type: 'button', title: 'Automatic: follows your look and background', 'aria-label': 'Automatic text color', 'aria-pressed': String(!current), onclick: () => set('', 'automatic') }, 'A'),
+      ...R.TEXT_COLORS.map((c) =>
+        el('button', { class: 'swatch', type: 'button', title: c.name, 'aria-label': c.name, style: `background:${c.value}`, 'aria-pressed': String(current === c.value), onclick: () => set(c.value, c.name.toLowerCase()) }),
+      ),
+      el('span', { class: 'swatch custom color-input', title: 'Custom text color', 'aria-pressed': String(!!current && !R.TEXT_COLORS.some((c) => c.value === current)) }, picker),
+    );
   }
 
   function luminanceOf(hex) {
@@ -510,6 +541,7 @@
       section('Look', presets),
       section('Mode', segmented([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], look.scheme, (v) => commit((st, pr) => (pr.look.scheme = v)), 'Light or dark')),
       section('Accent', accentSwatches),
+      section('Text', textSwatches()),
       section('Corners', segmented([['soft', 'Soft'], ['rounded', 'Rounded'], ['extra', 'Extra round']], look.shape, (v) => commit((st, pr) => (pr.look.shape = v), { undo: 'Corner style changed' }), 'Corner style')),
       section(
         'Background',

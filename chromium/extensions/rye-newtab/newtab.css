@@ -7,8 +7,8 @@ body {
 }
 
 /* Over photos and dark artwork, text turns light and surfaces turn to glass. */
-body[data-tone='image'],
-body[data-tone='dark'] {
+body[data-tone='image'] :is(.stage, .corner-actions),
+body[data-tone='dark'] :is(.stage, .corner-actions) {
   --text: #f7f4ef;
   --text-2: rgba(247, 244, 239, 0.82);
   --text-3: rgba(247, 244, 239, 0.62);
@@ -17,7 +17,7 @@ body[data-tone='dark'] {
   --hairline: rgba(255, 255, 255, 0.14);
   --glass: rgba(18, 16, 15, 0.42);
 }
-body[data-tone='light'] {
+body[data-tone='light'] :is(.stage, .corner-actions) {
   --text: #241f1a;
   --text-2: rgba(36, 31, 26, 0.74);
   --text-3: rgba(36, 31, 26, 0.55);
@@ -1166,4 +1166,25 @@ body.ob-open .corner-actions {
 .stage[data-style='expressive'] .shortcuts[data-style='tiles'] .tile-icon img {
   width: 38px;
   height: 38px;
+}
+
+/* A text color chosen in Customize applies to the page's own words; the
+   search box and panels keep the theme's colors so they stay readable. */
+.stage[data-custom-text] :is(.hello-line, .tile-title, .note, .note input, .list a, .group-chip),
+.corner-actions[data-custom-text] .chip-btn {
+  color: var(--custom-text);
+}
+.stage[data-custom-text] :is(.time, .list h2, .tile-add .tile-icon) {
+  color: color-mix(in srgb, var(--custom-text) 70%, transparent);
+}
+.stage[data-custom-text] .tile-title {
+  color: color-mix(in srgb, var(--custom-text) 85%, transparent);
+}
+.text-swatch.auto {
+  display: grid;
+  place-items: center;
+  background: var(--raised-2);
+  color: var(--text-2);
+  font-size: 10.5px;
+  font-weight: 650;
 }
