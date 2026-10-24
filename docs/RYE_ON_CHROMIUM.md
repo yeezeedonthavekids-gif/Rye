@@ -169,19 +169,40 @@ Rye's. It only edits files that already exist, so it's safe to re-run, and
 ### Step 1: Rye's interface, built in
 
 `chromium/apply_rye.py` does everything `apply_branding.py` does, and also
-changes Chromium's own interface code, the way Brave and other browsers do:
+changes Chromium's own interface code, the way Brave and other browsers do.
 
-- **Colors:** Rye's warm palette is the browser's default color scheme, in
-  light and dark (following Windows). It covers the frame, tabs, toolbar,
-  address bar, menus, dialogs and settings pages. There is no theme to apply;
-  if you pick a theme or color in Customize, Rye steps aside for it.
-- **Shape:** the page floats as a rounded sheet inside the window (square again
-  in fullscreen), with no line under the toolbar, no dividers between tabs,
-  softer corners and a slightly more compact tab strip.
-- **New tab page:** search, shortcuts, photo backgrounds with a dim slider
-  (Customize → the first swatch, or drop a photo on the page) and an optional
-  clock, date and most-visited list. It's built in, so it can't be removed by
-  accident and doesn't appear in `chrome://extensions`.
+**Colors.** Rye computes its palette inside Chromium's color pipeline
+(`chrome_color_mixers.cc`) from three inputs: a surface tint, an accent and
+light or dark. The frame, tabs, toolbar, address bar, menus, dialogs and
+settings pages all follow it. The inputs are profile prefs:
+
+| Setting | Pref |
+| --- | --- |
+| Surface tint (presets) | `rye.surface_color` (new, 0xRRGGBB, 0 = warm neutrals) |
+| Accent | `browser.theme.user_color2` (Chromium's own) |
+| Light / dark / system | `browser.theme.color_scheme2` |
+| Monochrome | `browser.theme.is_grayscale2` |
+| Corner style | `rye.shape` (new, 0 soft, 1 rounded, 2 extra round) |
+
+An installed theme, high contrast and forced colors take precedence.
+
+**Shape.** The page floats as a rounded sheet (square in fullscreen). Tabs,
+the toolbar, address bar, menus, dialogs and fields follow the corner style.
+
+**Rye's pages.** A built-in component extension (`extensions/rye-newtab`)
+provides:
+
+- a five-step first-launch setup (name, look, preferences), which also opens
+  from Personalize → Backup and reset → Run setup again;
+- the new tab page: greeting, search, note, shortcut collections, shortcuts
+  with real icons, bookmarks, recent and most-visited lists, and a Customize
+  panel;
+- Personalize (`personalize.html`): identity, colors, layout, shape,
+  background, motion, profiles, export/import and resets, with a live preview.
+
+These pages change the browser's settings through `chrome.settingsPrivate`,
+which `apply_rye.py` allows for the prefs above, the bookmarks bar and vertical
+tabs. Chromium's own new-tab footer is turned off.
 
 ```
 cd /d C:\src\rye
@@ -191,9 +212,10 @@ cd /d C:\src\chromium\src
 autoninja -C out\Rye chrome
 ```
 
-Re-run it after every `git pull`: it restores each file it patches with
-`git checkout` and patches it fresh, so it always applies the current version.
-To undo all of it, run `git checkout -- chrome` in `C:\src\chromium\src`.
+Re-run it after every `git pull`. It patches each file fresh from Chromium's
+original (read with `git show`) and only writes files whose contents change.
+To undo all of it, run `git checkout -- chrome components` in
+`C:\src\chromium\src`.
 
 ### Next steps
 

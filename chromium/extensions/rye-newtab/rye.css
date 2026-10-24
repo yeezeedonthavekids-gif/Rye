@@ -1,0 +1,420 @@
+/* Rye's shared design system for its built-in pages. Colors and radii are
+   written onto <html> by core.js (applyTokens); these are the warm dark
+   defaults shown for the instant before that runs. */
+:root {
+  --frame: #1c1b19;
+  --sheet: #211f1d;
+  --base: #252321;
+  --raised: #2d2a28;
+  --raised-2: #34312e;
+  --sunken: #1c1b19;
+  --text: #eeeded;
+  --text-2: #b8b5b2;
+  --text-3: #8b8783;
+  --hairline: rgba(238, 237, 237, 0.09);
+  --hover: rgba(238, 237, 237, 0.065);
+  --press: rgba(238, 237, 237, 0.11);
+  --accent: #7593b4;
+  --accent-2: #9db48a;
+  --accent-fill: #7593b4;
+  --on-accent: #141210;
+  --accent-soft: rgba(117, 147, 180, 0.2);
+  --accent-text: #91a9c3;
+  --scrim: rgba(0, 0, 0, 0.5);
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 11px;
+  --r-lg: 15px;
+  --r-xl: 20px;
+  --r-ctl: 10px;
+  --r-icon: 14px;
+  --r-tile: 14px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.5, 1);
+  --t-fast: 120ms;
+  --t-med: 200ms;
+  --t-slow: 320ms;
+  --font: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+:root[data-scheme='light'] {
+  color-scheme: light;
+}
+:root[data-motion='reduced'] {
+  --t-fast: 1ms;
+  --t-med: 90ms;
+  --t-slow: 120ms;
+}
+:root[data-motion='none'] *,
+:root[data-motion='none'] *::before,
+:root[data-motion='none'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+:root[data-motion='reduced'] * {
+  animation-duration: 1ms !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--sheet);
+  -webkit-font-smoothing: antialiased;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: default;
+}
+[hidden] {
+  display: none !important;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--r-ctl);
+  background: var(--raised-2);
+  color: var(--text);
+  font-weight: 550;
+  white-space: nowrap;
+  transition: background-color var(--t-fast) ease, transform var(--t-fast) ease, opacity var(--t-fast) ease;
+}
+.btn:hover {
+  background: color-mix(in srgb, var(--raised-2), var(--text) 7%);
+}
+.btn:active {
+  transform: translateY(0.5px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.btn.primary {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+.btn.primary:hover {
+  filter: brightness(1.06);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--text-2);
+}
+.btn.ghost:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.btn.danger {
+  color: #e2705f;
+}
+.btn.large {
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-ctl);
+  background: transparent;
+  color: var(--text-2);
+  transition: background-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+:root[data-shape='rounded'] .icon-btn,
+:root[data-shape='extra'] .icon-btn {
+  border-radius: 999px;
+}
+.icon-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* ─── Segmented control ───────────────────────────────────────────────────── */
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: calc(var(--r-ctl) + 3px);
+  background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+:root[data-shape='extra'] .segmented {
+  border-radius: 999px;
+}
+.segmented button {
+  height: 26px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--r-ctl);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+.segmented button:hover {
+  color: var(--text);
+}
+.segmented button[aria-pressed='true'] {
+  background: var(--raised-2);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+/* ─── Toggle ──────────────────────────────────────────────────────────────── */
+.toggle {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 21px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--raised-2);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  transition: background var(--t-med) ease;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--text-2);
+  transition: transform var(--t-med) var(--ease-spring), background-color var(--t-med) ease;
+}
+.toggle[aria-checked='true'] {
+  background: var(--accent-fill);
+  box-shadow: none;
+}
+.toggle[aria-checked='true']::after {
+  transform: translateX(15px);
+  background: var(--on-accent);
+}
+
+/* ─── Fields ──────────────────────────────────────────────────────────────── */
+.field {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-ctl);
+  background: var(--sunken);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--t-fast) ease, box-shadow var(--t-fast) ease, background-color var(--t-fast) ease;
+}
+:root[data-shape='extra'] .field {
+  padding: 0 16px;
+}
+.field::placeholder {
+  color: var(--text-3);
+}
+.field:hover {
+  border-color: color-mix(in srgb, var(--hairline), var(--text) 12%);
+}
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--raised);
+}
+.field[aria-invalid='true'] {
+  border-color: #e2705f;
+}
+select.field {
+  appearance: none;
+  padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+/* ─── Rows, swatches ──────────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+}
+.row-text {
+  min-width: 0;
+}
+.row-title {
+  font-weight: 500;
+}
+.row-sub {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.swatch {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  transition: transform var(--t-fast) var(--ease);
+}
+.swatch:hover {
+  transform: scale(1.08);
+}
+.swatch[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px var(--sheet), 0 0 0 4px var(--text);
+}
+.color-input {
+  position: relative;
+  overflow: hidden;
+}
+.color-input input {
+  position: absolute;
+  inset: -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 16px);
+  opacity: 0;
+}
+
+/* ─── Mini browser preview (used by setup and Personalize) ────────────────── */
+.mini {
+  --m-frame: #1c1b19;
+  --m-base: #252321;
+  --m-sheet: #211f1d;
+  --m-omni: #1c1b19;
+  --m-accent: #7593b4;
+  --m-text: #eeeded;
+  --m-r: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--m-r);
+  background: var(--m-frame);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+  aspect-ratio: 16 / 10;
+}
+.mini-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 18%;
+  padding: 0 8%;
+}
+.mini-tab {
+  width: 26%;
+  height: 70%;
+  border-radius: calc(var(--m-r) * 0.6) calc(var(--m-r) * 0.6) 0 0;
+  background: var(--m-base);
+}
+.mini-tab.off {
+  width: 20%;
+  height: 34%;
+  margin-bottom: 12%;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--m-text), transparent 86%);
+}
+.mini-bar {
+  display: flex;
+  align-items: center;
+  height: 17%;
+  padding: 0 4%;
+  background: var(--m-base);
+}
+.mini-omni {
+  flex: 1;
+  height: 58%;
+  border-radius: 999px;
+  background: var(--m-omni);
+}
+.mini-page {
+  flex: 1;
+  margin: 0 3% 3%;
+  border-radius: var(--m-r);
+  background: var(--m-sheet);
+  background-size: cover;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 7%;
+}
+.mini-wrap {
+  background: var(--m-base);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.mini-hello {
+  width: 42%;
+  height: 7px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--m-text), transparent 15%);
+}
+.mini-search {
+  width: 62%;
+  height: 12px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--m-text), transparent 90%);
+}
+.mini-dots {
+  display: flex;
+  gap: 6px;
+}
+.mini-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 30%;
+  background: var(--m-accent);
+}
+.mini-dots i:nth-child(2) {
+  opacity: 0.7;
+}
+.mini-dots i:nth-child(3) {
+  opacity: 0.45;
+}

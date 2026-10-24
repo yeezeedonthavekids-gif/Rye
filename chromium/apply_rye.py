@@ -5,7 +5,7 @@ Usage (from any folder, with depot_tools' python3):
     python3 apply_rye.py C:\\src\\chromium\\src           apply everything
     python3 apply_rye.py C:\\src\\chromium\\src --check   show what would change
     python3 apply_rye.py C:\\src\\chromium\\src --skip=float,colors
-        leave out parts (colors, float, sizes, newtab), for tracking down problems
+        leave out parts (colors, float, shape, newtab), for tracking down problems
 
 What it changes:
   1. Name, strings and icons (apply_branding.py).
@@ -43,7 +43,7 @@ BUNDLED = [('rye-newtab', 'newtab')]
 MARK = 'Rye:'
 
 # Files an earlier version of this script patched but this one doesn't.
-RETIRED = ['chrome/browser/themes/theme_service.cc']
+RETIRED = []
 
 
 class PatchError(Exception):
@@ -65,105 +65,60 @@ def insert_before(text, anchor, addition):
 
 
 # ─── Colors ──────────────────────────────────────────────────────────────────
-# Rye's palette from src/shared/theme.ts (warm tint, default accent). Values are
-# RRGGBB, or AARRGGBB for translucent ones.
+# Rye computes its palette instead of using Material's. Inputs:
+#   surface tint  the "rye.surface_color" pref (0 = Rye's warm neutrals)
+#   accent        Chromium's own user color (browser.theme.user_color2)
+#   light/dark    Chromium's color scheme (browser.theme.color_scheme2)
+#   monochrome    Chromium's grayscale setting, also used for incognito
+# Each entry: color id -> C++ expression using the helpers in the mixer.
 
-DARK = {
-    'ui::kColorFrameActive': '1c1b19',
-    'ui::kColorFrameInactive': '21201e',
-    'ui::kColorSysHeader': '1c1b19',
-    'ui::kColorSysHeaderInactive': '21201e',
-    'ui::kColorSysHeaderContainer': '2a2826',
-    'ui::kColorSysHeaderContainerInactive': '262422',
-    'ui::kColorSysOnHeaderPrimary': 'eeeded',
-    'ui::kColorSysOnHeaderPrimaryInactive': 'b8b5b2',
-    'ui::kColorSysOnHeaderDivider': '33302d',
-    'ui::kColorSysOnHeaderDividerInactive': '2d2a28',
-    'ui::kColorSysStateHeaderHover': '14ffffff',
-    'ui::kColorSysBase': '252321',
-    'ui::kColorSysBaseContainer': '2d2a28',
-    'ui::kColorSysBaseContainerElevated': '34312e',
-    'ui::kColorSysOmniboxContainer': '1c1b19',
-    'ui::kColorSysSurface': '2d2a28',
-    'ui::kColorSysSurfaceContainerLowest': '1c1b19',
-    'ui::kColorSysSurfaceContainerLow': '22201e',
-    'ui::kColorSysSurfaceContainer': '2d2a28',
-    'ui::kColorSysSurfaceContainerHigh': '34312e',
-    'ui::kColorSysSurfaceContainerHighest': '3b3835',
-    'ui::kColorSysSurfaceVariant': '34312e',
-    'ui::kColorSysNeutralContainer': '34312e',
-    'ui::kColorSysOnSurface': 'eeeded',
-    'ui::kColorSysOnSurfaceSubtle': 'b8b5b2',
-    'ui::kColorSysOnSurfaceSecondary': 'b8b5b2',
-    'ui::kColorSysOnSurfaceVariant': 'b8b5b2',
-    'ui::kColorSysPrimary': '7593b4',
-    'ui::kColorSysOnPrimary': '0f1720',
-    'ui::kColorSysPrimaryContainer': '33465b',
-    'ui::kColorSysOnPrimaryContainer': 'd8e3ef',
-    'ui::kColorSysTonalContainer': '33465b',
-    'ui::kColorSysOnTonalContainer': 'd8e3ef',
-    'ui::kColorSysOutline': '6b6662',
-    'ui::kColorSysNeutralOutline': '4a4642',
-    'ui::kColorSysTonalOutline': '4a5a6c',
-    'ui::kColorSysDivider': '35322f',
-    'ui::kColorSysStateHover': '11ffffff',
-    'ui::kColorSysStateHoverOnSubtle': '11ffffff',
-    'ui::kColorSysStateFocusRing': '7593b4',
-    'ui::kColorSysStateTextHighlight': '557593b4',
-    'kColorToolbarTopSeparatorFrameActive': '252321',
-    'kColorToolbarTopSeparatorFrameInactive': '252321',
-    'kColorToolbarContentAreaSeparator': '252321',
-    'kColorTabDividerFrameActive': '00000000',
-    'kColorTabDividerFrameInactive': '00000000',
-}
-
-LIGHT = {
-    'ui::kColorFrameActive': 'f1efeb',
-    'ui::kColorFrameInactive': 'f5f3f0',
-    'ui::kColorSysHeader': 'f1efeb',
-    'ui::kColorSysHeaderInactive': 'f5f3f0',
-    'ui::kColorSysHeaderContainer': 'e8e5e0',
-    'ui::kColorSysHeaderContainerInactive': 'ebe8e3',
-    'ui::kColorSysOnHeaderPrimary': '28221b',
-    'ui::kColorSysOnHeaderPrimaryInactive': '6d614f',
-    'ui::kColorSysOnHeaderDivider': 'dcd7cf',
-    'ui::kColorSysOnHeaderDividerInactive': 'e3dfd8',
-    'ui::kColorSysStateHeaderHover': '1228221b',
-    'ui::kColorSysBase': 'fbfaf8',
-    'ui::kColorSysBaseContainer': 'fdfdfd',
-    'ui::kColorSysBaseContainerElevated': 'ffffff',
-    'ui::kColorSysOmniboxContainer': 'efece7',
-    'ui::kColorSysSurface': 'fdfdfd',
-    'ui::kColorSysSurfaceContainerLowest': 'ffffff',
-    'ui::kColorSysSurfaceContainerLow': 'f7f5f2',
-    'ui::kColorSysSurfaceContainer': 'f3f1ed',
-    'ui::kColorSysSurfaceContainerHigh': 'ece9e4',
-    'ui::kColorSysSurfaceContainerHighest': 'e5e1db',
-    'ui::kColorSysSurfaceVariant': 'ece9e4',
-    'ui::kColorSysNeutralContainer': 'ece9e4',
-    'ui::kColorSysOnSurface': '28221b',
-    'ui::kColorSysOnSurfaceSubtle': '6d614f',
-    'ui::kColorSysOnSurfaceSecondary': '6d614f',
-    'ui::kColorSysOnSurfaceVariant': '6d614f',
-    'ui::kColorSysPrimary': '5b7fa6',
-    'ui::kColorSysOnPrimary': 'ffffff',
-    'ui::kColorSysPrimaryContainer': 'dbe5f0',
-    'ui::kColorSysOnPrimaryContainer': '1c2f44',
-    'ui::kColorSysTonalContainer': 'dbe5f0',
-    'ui::kColorSysOnTonalContainer': '1c2f44',
-    'ui::kColorSysOutline': 'a39a8e',
-    'ui::kColorSysNeutralOutline': 'd8d2c9',
-    'ui::kColorSysTonalOutline': 'b9c7d6',
-    'ui::kColorSysDivider': 'e6e1da',
-    'ui::kColorSysStateHover': '0e28221b',
-    'ui::kColorSysStateHoverOnSubtle': '0e28221b',
-    'ui::kColorSysStateFocusRing': '5b7fa6',
-    'ui::kColorSysStateTextHighlight': '445b7fa6',
-    'kColorToolbarTopSeparatorFrameActive': 'fbfaf8',
-    'kColorToolbarTopSeparatorFrameInactive': 'fbfaf8',
-    'kColorToolbarContentAreaSeparator': 'fbfaf8',
-    'kColorTabDividerFrameActive': '00000000',
-    'kColorTabDividerFrameInactive': '00000000',
+PALETTE = {
+    'ui::kColorFrameActive': 'tone(dark ? 0.105 : 0.925)',
+    'ui::kColorFrameInactive': 'tone(dark ? 0.125 : 0.945)',
+    'ui::kColorSysHeader': 'tone(dark ? 0.105 : 0.925)',
+    'ui::kColorSysHeaderInactive': 'tone(dark ? 0.125 : 0.945)',
+    'ui::kColorSysHeaderContainer': 'tone(dark ? 0.155 : 0.885)',
+    'ui::kColorSysHeaderContainerInactive': 'tone(dark ? 0.14 : 0.905)',
+    'ui::kColorSysOnHeaderPrimary': 'text',
+    'ui::kColorSysOnHeaderPrimaryInactive': 'text_subtle',
+    'ui::kColorSysOnHeaderDivider': 'tone(dark ? 0.2 : 0.86)',
+    'ui::kColorSysOnHeaderDividerInactive': 'tone(dark ? 0.17 : 0.89)',
+    'ui::kColorSysStateHeaderHover': 'SkColorSetA(overlay, dark ? 0x14 : 0x12)',
+    'ui::kColorSysBase': 'base',
+    'ui::kColorSysBaseContainer': 'tone(dark ? 0.17 : 0.99)',
+    'ui::kColorSysBaseContainerElevated': 'tone(dark ? 0.2 : 1.0)',
+    'ui::kColorSysOmniboxContainer': 'tone(dark ? 0.105 : 0.93)',
+    'ui::kColorSysSurface': 'tone(dark ? 0.17 : 0.99)',
+    'ui::kColorSysSurfaceContainerLowest': 'tone(dark ? 0.1 : 1.0)',
+    'ui::kColorSysSurfaceContainerLow': 'tone(dark ? 0.13 : 0.965)',
+    'ui::kColorSysSurfaceContainer': 'tone(dark ? 0.17 : 0.95)',
+    'ui::kColorSysSurfaceContainerHigh': 'tone(dark ? 0.2 : 0.925)',
+    'ui::kColorSysSurfaceContainerHighest': 'tone(dark ? 0.23 : 0.9)',
+    'ui::kColorSysSurfaceVariant': 'tone(dark ? 0.2 : 0.925, 0.8)',
+    'ui::kColorSysNeutralContainer': 'tone(dark ? 0.2 : 0.925, 0.8)',
+    'ui::kColorSysOnSurface': 'text',
+    'ui::kColorSysOnSurfaceSubtle': 'text_subtle',
+    'ui::kColorSysOnSurfaceSecondary': 'text_subtle',
+    'ui::kColorSysOnSurfaceVariant': 'text_subtle',
+    'ui::kColorSysPrimary': 'primary',
+    'ui::kColorSysOnPrimary': 'on_primary',
+    'ui::kColorSysPrimaryContainer': 'primary_container',
+    'ui::kColorSysOnPrimaryContainer': 'on_primary_container',
+    'ui::kColorSysTonalContainer': 'primary_container',
+    'ui::kColorSysOnTonalContainer': 'on_primary_container',
+    'ui::kColorSysOutline': 'tone(dark ? 0.42 : 0.62, 0.5)',
+    'ui::kColorSysNeutralOutline': 'tone(dark ? 0.28 : 0.82, 0.6)',
+    'ui::kColorSysTonalOutline': 'RyeTone(accent, accent.s * 0.4, dark ? 0.35 : 0.78)',
+    'ui::kColorSysDivider': 'tone(dark ? 0.21 : 0.885)',
+    'ui::kColorSysStateHover': 'SkColorSetA(overlay, dark ? 0x11 : 0x0f)',
+    'ui::kColorSysStateHoverOnSubtle': 'SkColorSetA(overlay, dark ? 0x11 : 0x0f)',
+    'ui::kColorSysStateFocusRing': 'primary',
+    'ui::kColorSysStateTextHighlight': 'SkColorSetA(primary, 0x55)',
+    'kColorToolbarTopSeparatorFrameActive': 'base',
+    'kColorToolbarTopSeparatorFrameInactive': 'base',
+    'kColorToolbarContentAreaSeparator': 'base',
+    'kColorTabDividerFrameActive': 'SK_ColorTRANSPARENT',
+    'kColorTabDividerFrameInactive': 'SK_ColorTRANSPARENT',
 }
 
 
@@ -175,63 +130,104 @@ def known_color_ids(src):
     return ids
 
 
-def sk_color(value):
-    if len(value) == 6:
-        value = 'ff' + value
-    a, r, g, b = (value[i:i + 2] for i in range(0, 8, 2))
-    return f'SkColorSetARGB(0x{a}, 0x{r}, 0x{g}, 0x{b})'
-
-
-def mixer_lines(palette, ids, skipped):
-    lines = []
-    for name, value in palette.items():
-        if name.split('::')[-1] not in ids:
-            skipped.add(name)
-            continue
-        lines.append(f'    mixer[{name}] = {{{sk_color(value)}}};')
-    return '\n'.join(lines)
-
-
 def patch_color_mixers(text, src):
     ids = known_color_ids(src)
-    skipped = set()
-    dark = mixer_lines(DARK, ids, skipped)
-    light = mixer_lines(LIGHT, ids, skipped)
-    for name in sorted(skipped):
-        print(f'  note: {name} is not in this Chromium version, skipped')
+    lines = []
+    for name, expr in PALETTE.items():
+        if name.split('::')[-1] not in ids:
+            print(f'  note: {name} is not in this Chromium version, skipped')
+            continue
+        lines.append(f'  mixer[{name}] = {{{expr}}};')
+    assignments = '\n'.join(lines)
 
-    function = f'''// Rye: Rye's palette for the whole browser UI. Later mixers resolve their
-// references against the final colors, so setting the system colors here
-// recolors everything derived from them. Steps aside for a theme or color the
-// user picked, incognito and high contrast.
+    function = f"""// Rye: defined in chrome/browser/ui/layout_constants.cc and set from the
+// "rye.surface_color" pref by ThemeService.
+uint32_t RyeSurfaceColor();
+
+// Rye: Rye's palette for the whole browser UI, computed from a surface tint,
+// an accent (Chromium's user color) and light or dark. Later mixers resolve
+// their references against the final colors, so setting the system colors
+// here recolors everything derived from them. Steps aside for an installed
+// theme, high contrast and forced colors.
 namespace {{
+
+// Rye's default surfaces: warm, barely tinted neutrals.
+constexpr color_utils::HSL kRyeWarmSurface = {{40.0 / 360.0, 0.07, 0.5}};
+
+SkColor RyeTone(const color_utils::HSL& hsl, double saturation, double lightness) {{
+  return color_utils::HSLToSkColor(
+      {{hsl.h, std::clamp(saturation, 0.0, 1.0), lightness}}, SK_AlphaOPAQUE);
+}}
+
 void AddRyeColorMixer(ui::ColorProvider* provider,
                       const ui::ColorProviderKey& key) {{
-  if (key.custom_theme || key.user_color.has_value() ||
-      key.user_color_source ==
-          ui::ColorProviderKey::UserColorSource::kGrayscale ||
+  if (key.custom_theme ||
       key.contrast_mode == ui::ColorProviderKey::ContrastMode::kHigh ||
       key.forced_colors != ui::ColorProviderKey::ForcedColors::kNone) {{
     return;
   }}
-  ui::ColorMixer& mixer = provider->AddMixer();
-  if (key.color_mode == ui::ColorProviderKey::ColorMode::kDark) {{
-{dark}
-  }} else {{
-{light}
+  const bool dark = key.color_mode == ui::ColorProviderKey::ColorMode::kDark;
+  const bool mono = key.user_color_source ==
+                    ui::ColorProviderKey::UserColorSource::kGrayscale;
+
+  color_utils::HSL surface = kRyeWarmSurface;
+  if (const uint32_t seed = RyeSurfaceColor(); seed != 0) {{
+    color_utils::SkColorToHSL(SkColorSetA(seed, SK_AlphaOPAQUE), &surface);
   }}
+  if (mono) {{
+    surface.s = 0;
+  }}
+  // Dark surfaces carry the full tint; light ones a gentler version of it.
+  const double tint =
+      dark ? std::min(surface.s, 0.6) : std::min(surface.s * 0.55, 0.35);
+  auto tone = [&](double lightness, double scale = 1.0) {{
+    return RyeTone(surface, tint * scale, lightness);
+  }};
+
+  color_utils::HSL accent;
+  color_utils::SkColorToHSL(
+      key.user_color.value_or(dark ? SkColorSetRGB(0x75, 0x93, 0xb4)
+                                   : SkColorSetRGB(0x5b, 0x7f, 0xa6)),
+      &accent);
+  if (mono) {{
+    accent.s = 0;
+  }}
+  // Keep the accent readable on Rye's surfaces in both modes.
+  accent.l = dark ? std::clamp(accent.l, 0.62, 0.82)
+                  : std::clamp(accent.l, 0.3, 0.5);
+  const SkColor primary = color_utils::HSLToSkColor(accent, SK_AlphaOPAQUE);
+  const SkColor on_primary = color_utils::IsDark(primary)
+                                 ? SK_ColorWHITE
+                                 : SkColorSetRGB(0x14, 0x12, 0x10);
+  const SkColor primary_container =
+      RyeTone(accent, accent.s * 0.5, dark ? 0.27 : 0.88);
+  const SkColor on_primary_container =
+      RyeTone(accent, accent.s * 0.6, dark ? 0.88 : 0.18);
+  const SkColor base = tone(dark ? 0.14 : 0.975);
+  const SkColor text = tone(dark ? 0.93 : 0.12, 0.3);
+  const SkColor text_subtle = tone(dark ? 0.72 : 0.38, 0.35);
+  const SkColor overlay = dark ? SK_ColorWHITE : tone(0.12, 0.3);
+
+  ui::ColorMixer& mixer = provider->AddMixer();
+{assignments}
 }}
+
 }}  // namespace
 
-'''
+"""
     text = insert_before(text, 'void AddChromeColorMixers(ui::ColorProvider* provider,\n', function)
     text = insert_after(text, '  AddNativeChromeColorMixer(provider, key);\n',
                         '  AddRyeColorMixer(provider, key);  // Rye\n')
     headers = ('ui/color/color_mixer.h', 'ui/color/color_provider.h',
-               'ui/color/color_provider_key.h', 'ui/color/color_recipe.h')
+               'ui/color/color_provider_key.h', 'ui/color/color_recipe.h',
+               'ui/gfx/color_utils.h')
     missing = ''.join(f'#include "{h}"  // Rye\n' for h in headers
                       if f'#include "{h}"' not in text)
-    return insert_after(text, '#include "ui/color/color_provider_utils.h"\n', missing)
+    text = insert_after(text, '#include "ui/color/color_provider_utils.h"\n', missing)
+    for std_header in ('<algorithm>', '<cstdint>'):
+        if f'#include {std_header}' not in text:
+            text = insert_before(text, '#include <memory>\n', f'#include {std_header}  // Rye\n')
+    return text
 
 
 # ─── Floating page ───────────────────────────────────────────────────────────
@@ -240,11 +236,20 @@ def patch_multi_contents_view(text, src):
     text = insert_before(
         text,
         'MultiContentsView::MultiContentsView(\n    BrowserView* browser_view,\n',
+        '// Rye: defined in chrome/browser/ui/layout_constants.cc (0 soft, 1 rounded,\n'
+        '// 2 extra round).\n'
+        'int RyeShape();\n'
+        '\n'
         '// Rye: in normal windows the page floats as a rounded sheet, the way split\n'
         '// view shows its pages, except in fullscreen.\n'
         'namespace {\n'
-        'constexpr int kRyeContentInset = 8;\n'
-        'constexpr float kRyeContentCornerRadius = 10;\n'
+        'int RyeContentInset() {\n'
+        '  return RyeShape() == 0 ? 6 : RyeShape() == 2 ? 10 : 8;\n'
+        '}\n'
+        '\n'
+        'float RyeContentCornerRadius() {\n'
+        '  return RyeShape() == 0 ? 8 : RyeShape() == 2 ? 16 : 12;\n'
+        '}\n'
         '\n'
         'bool RyeFloatsContents(const BrowserView* browser_view) {\n'
         '  // Layout can run before the window exists or after it closes, so ask\n'
@@ -260,7 +265,7 @@ def patch_multi_contents_view(text, src):
         'gfx::RoundedCornersF RyeContentCorners(const BrowserView* browser_view,\n'
         '                                       const gfx::RoundedCornersF& other) {\n'
         '  return RyeFloatsContents(browser_view)\n'
-        '             ? gfx::RoundedCornersF(kRyeContentCornerRadius)\n'
+        '             ? gfx::RoundedCornersF(RyeContentCornerRadius())\n'
         '             : other;\n'
         '}\n'
         '}  // namespace\n'
@@ -282,9 +287,9 @@ def patch_multi_contents_view(text, src):
         '  if (IsInSplitView()) {\n'
         '    available_space.Inset(split_view_insets_);\n'
         '  } else if (RyeFloatsContents(browser_view_)) {  // Rye\n'
-        '    available_space.Inset(gfx::Insets::TLBR(0, kRyeContentInset,\n'
-        '                                            kRyeContentInset,\n'
-        '                                            kRyeContentInset));\n'
+        '    available_space.Inset(gfx::Insets::TLBR(0, RyeContentInset(),\n'
+        '                                            RyeContentInset(),\n'
+        '                                            RyeContentInset()));\n'
         '  }\n')
 
     # No separator lines around a floating sheet.
@@ -332,7 +337,44 @@ def patch_multi_contents_view(text, src):
 
 # ─── Sizes and corners ───────────────────────────────────────────────────────
 
+RYE_APPEARANCE = """// Rye: appearance values from Rye's settings. ThemeService copies them from
+// the profile's "rye.shape" and "rye.surface_color" prefs; the color mixer,
+// tabs, page sheet and corner metrics read them.
+int RyeShape();
+uint32_t RyeSurfaceColor();
+float RyeCornerScale();
+void SetRyeAppearance(int shape, uint32_t surface_color);
+
+namespace {
+int g_rye_shape = 1;               // 0 soft, 1 rounded, 2 extra round
+uint32_t g_rye_surface_color = 0;  // 0 means Rye's warm neutrals
+}  // namespace
+
+int RyeShape() {
+  return g_rye_shape;
+}
+
+uint32_t RyeSurfaceColor() {
+  return g_rye_surface_color;
+}
+
+float RyeCornerScale() {
+  constexpr float kScales[] = {0.75f, 1.0f, 1.45f};
+  return kScales[g_rye_shape];
+}
+
+void SetRyeAppearance(int shape, uint32_t surface_color) {
+  g_rye_shape = std::clamp(shape, 0, 2);
+  g_rye_surface_color = surface_color;
+}
+
+"""
+
+
 def patch_layout_constants(text, src):
+    text = insert_before(text, 'int GetLayoutConstant(LayoutConstant constant) {\n', RYE_APPEARANCE)
+    text = insert_after(text, '#include "chrome/browser/ui/layout_constants.h"\n',
+                        '\n#include <algorithm>  // Rye\n#include <cstdint>    // Rye\n')
     # A slightly more compact tab strip.
     text = replace_once(
         text,
@@ -340,7 +382,7 @@ def patch_layout_constants(text, src):
         '      return 34 + GetLayoutConstant(LayoutConstant::kTabstripToolbarOverlap);\n',
         '    case LayoutConstant::kTabHeight:  // Rye: compact\n'
         '      return 32 + GetLayoutConstant(LayoutConstant::kTabstripToolbarOverlap);\n')
-    # Softer corners, matching the floating page.
+    # Corners follow Rye's corner style.
     text = replace_once(
         text,
         '    case LayoutConstant::kMainBackgroundRegionCornerRadius:\n'
@@ -350,8 +392,148 @@ def patch_layout_constants(text, src):
         '    case LayoutConstant::kMainBackgroundRegionCornerRadius:\n'
         '    case LayoutConstant::kToolbarCornerRadius:\n'
         '    case LayoutConstant::kVerticalTabCornerRadius:\n'
-        '      return 10;  // Rye\n')
+        '      return RyeShape() == 0 ? 8 : RyeShape() == 2 ? 14 : 10;  // Rye\n')
+    text = replace_once(
+        text,
+        '    case LayoutConstant::kLocationBarChildCornerRadius:\n'
+        '      return 12;\n',
+        '    case LayoutConstant::kLocationBarChildCornerRadius:\n'
+        '      return RyeShape() == 0 ? 8 : 12;  // Rye\n')
     return text
+
+
+def patch_tab_style(text, src):
+    text = insert_after(text, '#include "ui/views/layout/layout_provider.h"\n',
+                        '\n// Rye: defined in chrome/browser/ui/layout_constants.cc.\nint RyeShape();\n')
+    return replace_once(
+        text,
+        'int TabStyle::GetTopCornerRadius() const {\n  return 10;\n}\n',
+        'int TabStyle::GetTopCornerRadius() const {\n'
+        '  return RyeShape() == 0 ? 7 : RyeShape() == 2 ? 14 : 10;  // Rye\n'
+        '}\n')
+
+
+def patch_chrome_layout_provider(text, src):
+    text = insert_before(
+        text,
+        'int ChromeLayoutProvider::GetCornerRadiusMetric(views::ShapeContextToken token,\n',
+        '// Rye: defined in chrome/browser/ui/layout_constants.cc.\n'
+        'float RyeCornerScale();\n'
+        '\n'
+        'namespace {\n'
+        '// Rye: scales menus, dialogs, fields and buttons for Rye\'s Soft, Rounded\n'
+        '// and Extra Round styles. Pills and circles stay as they are.\n'
+        'int RyeScaleCorner(int radius, const gfx::Size& size) {\n'
+        '  if (radius <= 0) {\n'
+        '    return radius;\n'
+        '  }\n'
+        '  const int half =\n'
+        '      size.IsEmpty() ? 0 : std::min(size.width(), size.height()) / 2;\n'
+        '  if (half > 0 && radius >= half) {\n'
+        '    return radius;\n'
+        '  }\n'
+        '  const int scaled = static_cast<int>(radius * RyeCornerScale() + 0.5f);\n'
+        '  return half > 0 ? std::min(scaled, half) : scaled;\n'
+        '}\n'
+        '}  // namespace\n'
+        '\n')
+    text = replace_once(
+        text,
+        '    return LayoutProvider::GetCornerRadiusMetric(token, size);\n',
+        '    return RyeScaleCorner(  // Rye\n'
+        '        LayoutProvider::GetCornerRadiusMetric(token, size), size);\n')
+    return replace_once(
+        text,
+        '      return GetCornerRadiusMetric(GetShapeSysToken(token));\n',
+        '      return RyeScaleCorner(GetCornerRadiusMetric(GetShapeSysToken(token)),  // Rye\n'
+        '                            size);\n')
+
+
+# ─── Rye's settings, stored as profile prefs ─────────────────────────────────
+
+def patch_theme_service(text, src):
+    text = insert_before(
+        text,
+        '// static\nvoid ThemeService::RegisterProfilePrefs(\n',
+        '// Rye: defined in chrome/browser/ui/layout_constants.cc.\n'
+        'int RyeShape();\n'
+        'uint32_t RyeSurfaceColor();\n'
+        'void SetRyeAppearance(int shape, uint32_t surface_color);\n'
+        '\n'
+        'namespace {\n'
+        '// Rye: Rye\'s own appearance prefs, set from Rye\'s setup and Personalize\n'
+        '// pages through chrome.settingsPrivate.\n'
+        'constexpr char kRyeShapePref[] = "rye.shape";\n'
+        'constexpr char kRyeSurfaceColorPref[] = "rye.surface_color";\n'
+        '\n'
+        '// Copies the profile\'s Rye appearance into the values the UI reads and\n'
+        '// drops cached colors when they change, so the next paint uses them.\n'
+        'void RyeSyncAppearance(const PrefService* prefs) {\n'
+        '  if (!prefs->FindPreference(kRyeShapePref)) {\n'
+        '    return;\n'
+        '  }\n'
+        '  const int shape = prefs->GetInteger(kRyeShapePref);\n'
+        '  const uint32_t surface =\n'
+        '      static_cast<uint32_t>(prefs->GetInteger(kRyeSurfaceColorPref)) &\n'
+        '      0xFFFFFF;\n'
+        '  if (shape == RyeShape() && surface == RyeSurfaceColor()) {\n'
+        '    return;\n'
+        '  }\n'
+        '  SetRyeAppearance(shape, surface);\n'
+        '  ui::ColorProviderManager::Get().ResetColorProviderCache();\n'
+        '}\n'
+        '}  // namespace\n'
+        '\n')
+    text = insert_after(
+        text,
+        '  registry->RegisterStringPref(prefs::kSavedLocalTheme, "");\n',
+        '  // Rye: corner style (0 soft, 1 rounded, 2 extra round) and surface tint\n'
+        '  // (0xRRGGBB, 0 for Rye\'s warm neutrals).\n'
+        '  registry->RegisterIntegerPref(kRyeShapePref, 1);\n'
+        '  registry->RegisterIntegerPref(kRyeSurfaceColorPref, 0);\n')
+    text = insert_after(
+        text,
+        '  pref_change_registrar_.Add(\n'
+        '      prefs::kUserColor, base::BindRepeating(&ThemeService::NotifyThemeChanged,\n'
+        '                                             base::Unretained(this)));\n',
+        '  // Rye: repaint when Rye\'s appearance prefs change.\n'
+        '  pref_change_registrar_.Add(\n'
+        '      kRyeShapePref, base::BindRepeating(&ThemeService::NotifyThemeChanged,\n'
+        '                                         base::Unretained(this)));\n'
+        '  pref_change_registrar_.Add(\n'
+        '      kRyeSurfaceColorPref,\n'
+        '      base::BindRepeating(&ThemeService::NotifyThemeChanged,\n'
+        '                          base::Unretained(this)));\n'
+        '  RyeSyncAppearance(profile_->GetPrefs());\n')
+    text = insert_after(text, 'void ThemeService::NotifyThemeChanged() {\n',
+                        '  RyeSyncAppearance(profile_->GetPrefs());  // Rye\n')
+    return text
+
+
+def patch_prefs_util(text, src):
+    # Lets Rye's component pages change these through chrome.settingsPrivate.
+    return insert_after(
+        text,
+        '  (*s_allowlist)[::prefs::kCurrentThemeID] = settings_api::PrefType::kString;\n',
+        '  // Rye: appearance settings changed from Rye\'s setup and Personalize pages.\n'
+        '  (*s_allowlist)[::prefs::kUserColor] = settings_api::PrefType::kNumber;\n'
+        '  (*s_allowlist)[::prefs::kBrowserColorScheme] =\n'
+        '      settings_api::PrefType::kNumber;\n'
+        '  (*s_allowlist)[::prefs::kBrowserColorVariant] =\n'
+        '      settings_api::PrefType::kNumber;\n'
+        '  (*s_allowlist)[::prefs::kGrayscaleThemeEnabled] =\n'
+        '      settings_api::PrefType::kBoolean;\n'
+        '  (*s_allowlist)["rye.shape"] = settings_api::PrefType::kNumber;\n'
+        '  (*s_allowlist)["rye.surface_color"] = settings_api::PrefType::kNumber;\n')
+
+
+def patch_ntp_features(text, src):
+    # Chromium adds a footer naming the extension under extension new tab pages.
+    return replace_once(
+        text,
+        'BASE_FEATURE(kNtpFooter, base::FEATURE_ENABLED_BY_DEFAULT);\n',
+        '// Rye: the new tab page is Rye\'s own, so no extension footer.\n'
+        'BASE_FEATURE(kNtpFooter, base::FEATURE_DISABLED_BY_DEFAULT);\n')
 
 
 # ─── New tab page ────────────────────────────────────────────────────────────
@@ -433,19 +615,26 @@ def unchanged(text, src):
 
 
 PATCHES = [
-    ('chrome/browser/ui/color/chrome_color_mixers.cc', patch_color_mixers),
-    ('chrome/browser/ui/views/frame/multi_contents_view.cc', patch_multi_contents_view),
     ('chrome/browser/ui/layout_constants.cc', patch_layout_constants),
+    ('chrome/browser/ui/color/chrome_color_mixers.cc', patch_color_mixers),
+    ('chrome/browser/themes/theme_service.cc', patch_theme_service),
+    ('chrome/browser/extensions/api/settings_private/prefs_util.cc', patch_prefs_util),
+    ('chrome/browser/ui/views/frame/multi_contents_view.cc', patch_multi_contents_view),
+    ('chrome/browser/ui/tabs/tab_style.cc', patch_tab_style),
+    ('chrome/browser/ui/views/chrome_layout_provider.cc', patch_chrome_layout_provider),
+    ('components/search/ntp_features.cc', patch_ntp_features),
     ('chrome/browser/extensions/component_loader.cc', patch_component_loader),
     ('chrome/installer/mini_installer/chrome.release', patch_release),
 ]
 
 # Names for --skip=..., to leave a change out (the file goes back to Chromium's).
 PARTS = {
-    'colors': 'chrome/browser/ui/color/chrome_color_mixers.cc',
-    'float': 'chrome/browser/ui/views/frame/multi_contents_view.cc',
-    'sizes': 'chrome/browser/ui/layout_constants.cc',
-    'newtab': 'chrome/browser/extensions/component_loader.cc',
+    'colors': ['chrome/browser/ui/color/chrome_color_mixers.cc'],
+    'float': ['chrome/browser/ui/views/frame/multi_contents_view.cc'],
+    'shape': ['chrome/browser/ui/tabs/tab_style.cc',
+              'chrome/browser/ui/views/chrome_layout_provider.cc'],
+    'newtab': ['chrome/browser/extensions/component_loader.cc',
+               'components/search/ntp_features.cc'],
 }
 
 
@@ -493,7 +682,7 @@ def main(argv):
         print(f'unknown --skip part(s): {", ".join(sorted(skip - PARTS.keys()))}; '
               f'choose from {", ".join(PARTS)}')
         return 2
-    skipped_files = {PARTS[p] for p in skip}
+    skipped_files = {f for p in skip for f in PARTS[p]}
     if len(args) != 1:
         print(__doc__)
         return 2

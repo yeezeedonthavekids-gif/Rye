@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Personalize Rye</title>
+    <link rel="stylesheet" href="rye.css" />
+    <link rel="stylesheet" href="personalize.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="btn ghost back" href="newtab.html">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+        New tab
+      </a>
+      <h1>Personalize</h1>
+      <span class="profile-pill" id="profile-pill"></span>
+      <span class="spacer"></span>
+      <span class="saved" id="saved" aria-live="polite"></span>
+      <button class="btn" id="undo" type="button" disabled title="Undo (Ctrl+Z)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+        Undo
+      </button>
+    </header>
+
+    <div class="layout">
+      <nav class="nav" id="nav" aria-label="Sections"></nav>
+      <main class="content" id="content"></main>
+      <aside class="preview" aria-label="Live preview">
+        <div class="preview-frame" id="preview-frame">
+          <div class="pf-tabs"><span class="pf-tab"><i></i>New Tab</span><span class="pf-tab off"></span></div>
+          <div class="pf-bar"><span class="pf-omni"></span></div>
+          <div class="pf-page"><iframe id="preview" src="newtab.html?preview=1" title="New tab preview" tabindex="-1"></iframe></div>
+        </div>
+        <p class="preview-note" id="preview-note"></p>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <input type="file" id="bg-file" accept="image/*" hidden />
+    <input type="file" id="import-file" accept="application/json,.json" hidden />
+    <script src="core.js"></script>
+    <script src="personalize.js"></script>
+  </body>
+</html>
