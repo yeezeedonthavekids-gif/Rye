@@ -181,6 +181,7 @@ button {
   border-radius: 999px;
 }
 .segmented button {
+  white-space: nowrap;
   height: 26px;
   padding: 0 12px;
   border: 0;
@@ -418,4 +419,20 @@ select.field {
 }
 .mini-dots i:nth-child(3) {
   opacity: 0.45;
+}
+
+/* Phones: controls go under their labels instead of squeezing beside them. */
+@media (max-width: 560px) {
+  .row {
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    padding-bottom: 6px;
+  }
+  .segmented {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  :root[data-shape='extra'] .segmented {
+    border-radius: calc(var(--r-ctl) + 3px);
+  }
 }

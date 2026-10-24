@@ -175,7 +175,7 @@
         }, t),
       ),
     );
-    const note = R.browserBridgeAvailable() ? null : el('p', { class: 'ob-hint' }, 'Open this page in Rye to see the browser itself change.');
+    const note = R.browserBridgeAvailable() || R.capabilities.phone ? null : el('p', { class: 'ob-hint' }, 'Open this page in Rye to see the browser itself change.');
     return {
       body: [...heading('Choose your look', 'Each one recolors the whole browser: tabs, toolbar, menus and pages. You can fine-tune it later.'), cards, el('div', { class: 'ob-row' }, el('span', { class: 'ob-label' }, 'Mode'), mode), note],
       foot: [back(), spacer(), next()],
@@ -227,13 +227,13 @@
         ...heading('A few preferences', 'Sensible defaults are already set. Change only what you like.'),
         el('div', { class: 'ob-prefs' },
           el('div', { class: 'row ob-pref' }, el('span', { class: 'row-text' }, el('span', { class: 'row-title' }, 'New tab search'), el('span', { class: 'row-sub' }, 'Where the search box on this page sends you')), engine),
-          toggle('Bookmarks bar', 'Below the address bar', p.layout.bookmarksBar, (st, pr) => (pr.layout.bookmarksBar = !pr.layout.bookmarksBar)),
+          R.capabilities.browserSettings ? toggle('Bookmarks bar', 'Below the address bar', p.layout.bookmarksBar, (st, pr) => (pr.layout.bookmarksBar = !pr.layout.bookmarksBar)) : null,
           toggle('Clock on new tabs', null, p.show.clock, (st, pr) => {
             pr.show.clock = !pr.show.clock;
             pr.show.date = pr.show.clock;
           }),
-          toggle('Frequently visited sites', null, p.show.frequent, (st, pr) => (pr.show.frequent = !pr.show.frequent)),
-          toggle('Tabs in a sidebar', 'Vertical tabs down the side of the window', p.layout.sidebar, (st, pr) => (pr.layout.sidebar = !pr.layout.sidebar)),
+          R.capabilities.topSites ? toggle('Frequently visited sites', null, p.show.frequent, (st, pr) => (pr.show.frequent = !pr.show.frequent)) : null,
+          R.capabilities.browserSettings ? toggle('Tabs in a sidebar', 'Vertical tabs down the side of the window', p.layout.sidebar, (st, pr) => (pr.layout.sidebar = !pr.layout.sidebar)) : null,
         ),
         el('div', { class: 'ob-layouts', role: 'radiogroup', 'aria-label': 'New tab layout' }, layoutCard('minimal', 'Minimal', 'Quiet and centered'), layoutCard('expressive', 'Expressive', 'A larger greeting, more room')),
       ],

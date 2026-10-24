@@ -1,0 +1,34 @@
+# Rye for iPhone and iPad. Generate the Xcode project with XcodeGen:
+#   brew install xcodegen && xcodegen generate
+name: Rye
+options:
+  bundleIdPrefix: app.rye
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    # Built unsigned; LiveContainer, AltStore or SideStore sign it on the phone.
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGN_IDENTITY: ""
+targets:
+  Rye:
+    type: application
+    platform: iOS
+    sources:
+      - path: Rye
+      # Rye's new tab page, setup and Personalize, shared with the desktop build.
+      - path: ../../chromium/extensions/rye-newtab
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.rye.browser
+        PRODUCT_NAME: Rye
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Rye/Info.plist

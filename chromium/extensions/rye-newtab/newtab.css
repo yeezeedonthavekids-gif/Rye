@@ -1188,3 +1188,33 @@ body.ob-open .corner-actions {
   font-size: 10.5px;
   font-weight: 650;
 }
+
+/* Phones: setup fits the screen. */
+@media (max-width: 560px) {
+  .onboarding {
+    place-items: start center;
+    padding: 12px;
+  }
+  .ob-card {
+    min-height: 0;
+    padding: 20px 18px 16px;
+    border-radius: var(--r-xl);
+  }
+  .ob-title {
+    font-size: 28px;
+  }
+  .ob-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .ob-pref select {
+    width: 100%;
+  }
+  .ob-foot {
+    position: sticky;
+    bottom: 0;
+    margin: 18px -18px -16px;
+    padding: 12px 18px 16px;
+    background: var(--raised);
+  }
+}

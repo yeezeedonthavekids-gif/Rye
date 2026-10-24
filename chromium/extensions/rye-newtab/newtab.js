@@ -336,7 +336,10 @@
       : '';
 
   async function renderLists() {
-    const { bookmarks, recent, frequent } = profile.show;
+    // Lists this browser can't provide stay hidden.
+    const bookmarks = profile.show.bookmarks && R.capabilities.bookmarks;
+    const recent = profile.show.recent && R.capabilities.history;
+    const frequent = profile.show.frequent && R.capabilities.topSites;
     $('lists').hidden = !(bookmarks || recent || frequent);
     const fill = async (id, show, fetch) => {
       const box = $(id);
@@ -558,9 +561,9 @@
         })),
         toggleRow('Shortcuts', show.shortcuts, () => commit((st, pr) => (pr.show.shortcuts = !pr.show.shortcuts))),
         toggleRow('Note for today', show.note, () => commit((st, pr) => (pr.show.note = !pr.show.note))),
-        toggleRow('Bookmarks', show.bookmarks, () => commit((st, pr) => (pr.show.bookmarks = !pr.show.bookmarks))),
-        toggleRow('Recently visited', show.recent, () => commit((st, pr) => (pr.show.recent = !pr.show.recent))),
-        toggleRow('Most visited', show.frequent, () => commit((st, pr) => (pr.show.frequent = !pr.show.frequent))),
+        R.capabilities.bookmarks ? toggleRow('Bookmarks', show.bookmarks, () => commit((st, pr) => (pr.show.bookmarks = !pr.show.bookmarks))) : null,
+        R.capabilities.history ? toggleRow('Recently visited', show.recent, () => commit((st, pr) => (pr.show.recent = !pr.show.recent))) : null,
+        R.capabilities.topSites ? toggleRow('Most visited', show.frequent, () => commit((st, pr) => (pr.show.frequent = !pr.show.frequent))) : null,
       ),
     );
   }
@@ -794,7 +797,7 @@
     const engine = R.ENGINES[profile.search.engine];
     if (engine.url) location.href = engine.url.replace('%s', encodeURIComponent(text));
     else if (typeof chrome !== 'undefined' && chrome.search?.query) chrome.search.query({ text, disposition: 'CURRENT_TAB' });
-    else location.href = R.ENGINES.duckduckgo.url.replace('%s', encodeURIComponent(text));
+    else location.href = (R.host?.defaultSearch || R.ENGINES.duckduckgo.url).replace('%s', encodeURIComponent(text));
   });
 
   let noteTimer = 0;

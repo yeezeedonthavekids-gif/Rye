@@ -3,3 +3,7 @@ dist/
 release/
 *.log
 .DS_Store
+mobile/ios/Rye.xcodeproj/
+mobile/ios/build/
+mobile/ios/Payload/
+mobile/ios/*.ipa

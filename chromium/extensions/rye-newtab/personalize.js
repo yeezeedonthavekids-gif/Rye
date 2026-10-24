@@ -279,7 +279,7 @@
         row('Placement', null, segmented('Content placement', [['center', 'Centered'], ['left', 'Left']], y.placement, (v) => commit((st, p) => (p.layout.placement = v)))),
         row('Search position', null, segmented('Search position', [['upper', 'Upper'], ['middle', 'Middle']], y.searchPosition, (v) => commit((st, p) => (p.layout.searchPosition = v)))),
         row('Search width', null, segmented('Search width', [['narrow', 'Narrow'], ['regular', 'Regular'], ['wide', 'Wide']], y.searchWidth, (v) => commit((st, p) => (p.layout.searchWidth = v)))),
-        row('Search engine', 'For the new tab search box. The address bar has its own setting.', el('div', { class: 'actions' }, engine, el('button', { class: 'btn ghost', type: 'button', onclick: () => api.tabs?.create({ url: 'chrome://settings/search' }) }, 'Address bar…'))),
+        row('Search engine', 'For the new tab search box. The address bar has its own setting.', el('div', { class: 'actions' }, engine, R.capabilities.browserSettings ? el('button', { class: 'btn ghost', type: 'button', onclick: () => api.tabs?.create({ url: 'chrome://settings/search' }) }, 'Address bar…') : null)),
       ),
       group('Shortcuts',
         row('Shortcut style', null, segmented('Shortcut style', [['icons', 'Icons only'], ['compact', 'Compact'], ['tiles', 'Large']], y.shortcutStyle, (v) => commit((st, p) => (p.layout.shortcutStyle = v)))),
@@ -292,11 +292,11 @@
         row('Date', null, toggle('Date', s.date, flip('date'))),
         row('Shortcuts', null, toggle('Shortcuts', s.shortcuts, flip('shortcuts'))),
         row('Note for today', 'A small personal reminder under the search box.', toggle('Note for today', s.note, flip('note'))),
-        row('Bookmarks', 'From your bookmarks bar.', toggle('Bookmarks', s.bookmarks, flip('bookmarks'))),
-        row('Recently visited', null, toggle('Recently visited', s.recent, flip('recent'))),
-        row('Most visited', null, toggle('Most visited', s.frequent, flip('frequent'))),
+        R.capabilities.bookmarks ? row('Bookmarks', 'From your bookmarks bar.', toggle('Bookmarks', s.bookmarks, flip('bookmarks'))) : null,
+        R.capabilities.history ? row('Recently visited', null, toggle('Recently visited', s.recent, flip('recent'))) : null,
+        R.capabilities.topSites ? row('Most visited', null, toggle('Most visited', s.frequent, flip('frequent'))) : null,
       ),
-      group('Browser',
+      !R.capabilities.browserSettings ? null : group('Browser',
         row('Bookmarks bar', 'Below the address bar on every tab.', toggle('Bookmarks bar', y.bookmarksBar, () => commit((st, p) => (p.layout.bookmarksBar = !p.layout.bookmarksBar)))),
         row('Tabs in a sidebar', 'Vertical tabs down the side of the window.', toggle('Tabs in a sidebar', y.sidebar, () => commit((st, p) => (p.layout.sidebar = !p.layout.sidebar)))),
       ),
@@ -409,9 +409,9 @@
       group(null,
         el('div', { class: 'actions' },
           state.profiles.length < 8 ? el('button', { class: 'btn primary', type: 'button', onclick: create }, 'New profile') : null,
-          el('button', { class: 'btn ghost', type: 'button', onclick: () => api.tabs?.create({ url: 'chrome://settings/manageProfile' }) }, 'Separate browsing data…'),
+          R.capabilities.browserSettings ? el('button', { class: 'btn ghost', type: 'button', onclick: () => api.tabs?.create({ url: 'chrome://settings/manageProfile' }) }, 'Separate browsing data…') : null,
         ),
-        el('p', { class: 'hint' }, 'For completely separate history, passwords and sign-ins, use a browser profile instead (Separate browsing data…).'),
+        R.capabilities.browserSettings ? el('p', { class: 'hint' }, 'For completely separate history, passwords and sign-ins, use a browser profile instead (Separate browsing data…).') : null,
       ),
     );
   }
@@ -458,6 +458,12 @@
   }
 
   function exportFile() {
+    const filename = `rye-${profile.label.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'appearance'}.json`;
+    // Phone apps save files through their own share sheet.
+    if (R.capabilities.phone) {
+      R.postToApp({ type: 'export', json: R.exportProfile(profile), filename });
+      return;
+    }
     const blob = new Blob([R.exportProfile(profile)], { type: 'application/json' });
     const a = el('a', { href: URL.createObjectURL(blob), download: `rye-${profile.label.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'appearance'}.json` });
     document.body.append(a);

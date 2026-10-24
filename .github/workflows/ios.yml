@@ -1,0 +1,44 @@
+name: iOS
+
+on:
+  push:
+    branches: [claude/rye-browser, main]
+    paths: ['mobile/ios/**', 'chromium/extensions/rye-newtab/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate the Xcode project
+        working-directory: mobile/ios
+        run: |
+          brew install xcodegen
+          xcodegen generate
+      - name: Build (unsigned)
+        working-directory: mobile/ios
+        run: |
+          set -o pipefail
+          xcodebuild -project Rye.xcodeproj -scheme Rye -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build | tee xcodebuild.log | grep -E "error:|warning: .*Rye/|BUILD (SUCCEEDED|FAILED)" || true
+          test -d build/Build/Products/Release-iphoneos/Rye.app
+      - name: Package Rye.ipa
+        working-directory: mobile/ios
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/Rye.app Payload/
+          zip -qry Rye.ipa Payload
+          ls -lh Rye.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rye-ios
+          path: mobile/ios/Rye.ipa
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: xcodebuild-log
+          path: mobile/ios/xcodebuild.log

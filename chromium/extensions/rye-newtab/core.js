@@ -499,7 +499,39 @@
 
   // Returns the names of browser settings that changed.
   let applyChain = Promise.resolve();
+  // Rye's phone apps host these pages too. They expose window.RyeHost and a
+  // message channel; the look is sent there so the app's own toolbar matches.
+  const host = typeof window !== 'undefined' ? window.RyeHost || null : null;
+  function nativePost(message) {
+    try {
+      if (window.webkit?.messageHandlers?.rye) window.webkit.messageHandlers.rye.postMessage(message);
+      else if (window.RyeAndroid?.post) window.RyeAndroid.post(JSON.stringify(message));
+    } catch {
+      /* the app isn't listening */
+    }
+  }
+  function sendLookToApp(profile) {
+    const dark = isDark(profile.look);
+    const p = palette(profile.look, dark);
+    nativePost({
+      type: 'look',
+      dark,
+      shape: profile.look.shape,
+      frame: p.frame,
+      base: p.base,
+      sheet: p.sheet,
+      raised: p.raised,
+      sunken: p.sunken,
+      text: p.text,
+      text2: p.text2,
+      accent: p.accent,
+      onAccent: p.onAccent,
+      scheme: profile.look.scheme,
+    });
+  }
+
   function applyToBrowser(profile) {
+    if (host) sendLookToApp(profile);
     if (!settings) return Promise.resolve(null);
     const wanted = browserValues(profile);
     applyChain = applyChain.then(async () => {
@@ -516,6 +548,15 @@
   }
 
   const browserBridgeAvailable = () => !!settings;
+
+  // What this browser offers, so pages only show options that work.
+  const capabilities = {
+    browserSettings: !!settings,
+    bookmarks: !!ext?.bookmarks,
+    history: !!ext?.history,
+    topSites: !!ext?.topSites,
+    phone: !!host,
+  };
 
   // ─── Words ────────────────────────────────────────────────────────────────
 
@@ -669,7 +710,7 @@
     uid, defaultProfile, defaultState, sanitizeProfile, sanitizeState,
     load, save, activeProfile, getImage, setImage, onChange, encodeImage,
     palette, applyTokens, isDark, accentOf, hexToHsl, hslToHex, effectiveMotion,
-    applyToBrowser, browserBridgeAvailable, browserValues,
+    applyToBrowser, browserBridgeAvailable, browserValues, capabilities, host, postToApp: nativePost,
     greeting, greetingText, displayName, partOfDay, hostOf, knownSite, iconSources, siteColor, safeUrl,
     exportProfile, importProfile,
   };
