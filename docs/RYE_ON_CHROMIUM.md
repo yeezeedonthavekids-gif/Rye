@@ -217,6 +217,30 @@ original (read with `git show`) and only writes files whose contents change.
 To undo all of it, run `git checkout -- chrome components` in
 `C:\src\chromium\src`.
 
+### Step 2: a lean release build
+
+`out\\Rye` is a developer build: Chromium split into hundreds of libraries
+(`is_component_build=true`) with debug checks on. It rebuilds quickly but uses
+noticeably more memory. Browsers ship as a single library with the checks off:
+
+```
+cd /d C:\src\chromium\src
+gn gen out\RyeLite --args="is_debug=false is_component_build=false dcheck_always_on=false symbol_level=0 blink_symbol_level=0 v8_symbol_level=0"
+autoninja -C out\RyeLite -j 10 chrome
+```
+
+The first build takes as long as your very first one; later rebuilds are
+incremental. `apply_rye.py` copies Rye's pages into every build folder.
+
+Rye also turns off background work by default (`lean` in `apply_rye.py`):
+
+- Memory Saver is on, so tabs you haven't used for a while give their memory
+  back (chrome://settings/performance).
+- Page preloading is off (chrome://settings/performance → Preload pages).
+- Google's optimization hints, prediction models and on-device AI models are
+  off.
+- Tab hover cards don't keep screenshots of tabs.
+
 ### Next steps
 
 Changes that need C++ in Chromium itself, each as a separate patch you can build

@@ -5,7 +5,7 @@ Usage (from any folder, with depot_tools' python3):
     python3 apply_rye.py C:\\src\\chromium\\src           apply everything
     python3 apply_rye.py C:\\src\\chromium\\src --check   show what would change
     python3 apply_rye.py C:\\src\\chromium\\src --skip=float,colors
-        leave out parts (colors, float, shape, newtab), for tracking down problems
+        leave out parts (colors, float, shape, newtab, lean), for tracking down problems
 
 What it changes:
   1. Name, strings and icons (apply_branding.py).
@@ -542,6 +542,79 @@ def patch_ntp_features(text, src):
         'BASE_FEATURE(kNtpFooter, base::FEATURE_DISABLED_BY_DEFAULT);\n')
 
 
+# ─── Lighter defaults ────────────────────────────────────────────────────────
+# Background work Rye turns off by default to use less memory, the way
+# privacy-focused Chromium browsers do. Websites behave the same; each of
+# these can be turned back on in chrome://settings or chrome://flags.
+# These are optional: if a future Chromium moves one, it's skipped, not fatal.
+
+def disable_feature(text, name):
+    pattern = re.compile(r'(BASE_FEATURE\(\s*' + name + r',\s*)base::FEATURE_ENABLED_BY_DEFAULT(\s*\);)')
+    new, count = pattern.subn(r'\1base::FEATURE_DISABLED_BY_DEFAULT\2  // Rye: lighter', text)
+    if count != 1:
+        print(f'  note: {name} not found as an enabled feature, skipped')
+        return text
+    return new
+
+
+def optional_replace(text, old, new, what):
+    if text.count(old) != 1:
+        print(f'  note: {what} not found, skipped')
+        return text
+    return text.replace(old, new)
+
+
+def patch_optimization_guide(text, src):
+    # Google's page hints, prediction models and on-device AI: background
+    # downloads plus models kept in memory.
+    for name in ('kOptimizationHints', 'kOptimizationTargetPrediction',
+                 'kOptimizationGuideModelExecution', 'kModelQualityLogging'):
+        text = disable_feature(text, name)
+    return text
+
+
+def patch_ui_features(text, src):
+    # Hover cards keep a screenshot of each tab in memory.
+    return optional_replace(
+        text,
+        'BASE_FEATURE(kTabHoverCardImages,\n'
+        '#if BUILDFLAG(IS_MAC)\n'
+        '             base::FEATURE_DISABLED_BY_DEFAULT\n'
+        '#else\n'
+        '             base::FEATURE_ENABLED_BY_DEFAULT\n'
+        '#endif\n'
+        ');\n',
+        '// Rye: lighter; no tab screenshots in hover cards.\n'
+        'BASE_FEATURE(kTabHoverCardImages, base::FEATURE_DISABLED_BY_DEFAULT);\n',
+        'kTabHoverCardImages')
+
+
+def patch_memory_saver(text, src):
+    # Memory Saver on: tabs you haven't used for a while give their memory back
+    # and reload when you return to them.
+    text = optional_replace(
+        text,
+        '  registry->RegisterBooleanPref(kMemorySaverModeEnabled, false);\n',
+        '  registry->RegisterBooleanPref(kMemorySaverModeEnabled, true);  // Rye\n',
+        'kMemorySaverModeEnabled')
+    return optional_replace(
+        text,
+        '      kMemorySaverModeState, static_cast<int>(MemorySaverModeState::kDisabled));\n',
+        '      kMemorySaverModeState,\n'
+        '      static_cast<int>(MemorySaverModeState::kEnabled));  // Rye: lighter\n',
+        'kMemorySaverModeState')
+
+
+def patch_preloading(text, src):
+    # Preloading starts whole extra page processes in the background for pages
+    # you might open next.
+    return optional_replace(
+        text,
+        '      static_cast<int>(NetworkPredictionOptions::kDefault),\n',
+        '      static_cast<int>(NetworkPredictionOptions::kDisabled),  // Rye: lighter\n',
+        'kNetworkPredictionOptions default')
+
+
 # ─── New tab page ────────────────────────────────────────────────────────────
 
 def manifest_literal(folder):
@@ -629,6 +702,10 @@ PATCHES = [
     ('chrome/browser/ui/tabs/tab_style.cc', patch_tab_style),
     ('chrome/browser/ui/views/chrome_layout_provider.cc', patch_chrome_layout_provider),
     ('components/search/ntp_features.cc', patch_ntp_features),
+    ('components/optimization_guide/core/optimization_guide_features.cc', patch_optimization_guide),
+    ('chrome/browser/ui/ui_features.cc', patch_ui_features),
+    ('components/performance_manager/user_tuning/prefs.cc', patch_memory_saver),
+    ('chrome/browser/preloading/preloading_prefs.cc', patch_preloading),
     ('chrome/browser/extensions/component_loader.cc', patch_component_loader),
     ('chrome/installer/mini_installer/chrome.release', patch_release),
 ]
@@ -641,6 +718,10 @@ PARTS = {
               'chrome/browser/ui/views/chrome_layout_provider.cc'],
     'newtab': ['chrome/browser/extensions/component_loader.cc',
                'components/search/ntp_features.cc'],
+    'lean': ['components/optimization_guide/core/optimization_guide_features.cc',
+             'chrome/browser/ui/ui_features.cc',
+             'components/performance_manager/user_tuning/prefs.cc',
+             'chrome/browser/preloading/preloading_prefs.cc'],
 }
 
 
@@ -723,7 +804,12 @@ def main(argv):
         print('\nSome files did not match. Paste this output to get an updated script.')
         return 1
 
-    copy_extensions(os.path.join(src, 'out', 'Rye'), check)
+    # Every build folder (out\\Rye, out\\RyeLite, ...) gets Rye's pages.
+    out_root = os.path.join(src, 'out')
+    build_dirs = [os.path.join(out_root, d) for d in sorted(os.listdir(out_root))
+                  if os.path.isfile(os.path.join(out_root, d, 'args.gn'))] if os.path.isdir(out_root) else []
+    for build_dir in build_dirs or [os.path.join(out_root, 'Rye')]:
+        copy_extensions(build_dir, check)
     print('\nDone. Now rebuild: autoninja -C out\\Rye chrome')
     return 0
 

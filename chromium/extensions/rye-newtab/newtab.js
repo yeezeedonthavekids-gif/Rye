@@ -165,10 +165,36 @@
 
   // An icon container that tries each source in turn, then falls back to a
   // colored letter. Every site gets something recognizable.
+  // Which icon address worked for each site, remembered between new tabs so
+  // each one doesn't repeat requests that failed before.
+  const ICON_MEMO = 'rye.iconMemo';
+  let iconMemo = {};
+  try {
+    iconMemo = JSON.parse(localStorage.getItem(ICON_MEMO) || '{}');
+  } catch {
+    iconMemo = {};
+  }
+  function rememberIcon(url, value) {
+    if (iconMemo[url] === value) return;
+    iconMemo[url] = value;
+    const keys = Object.keys(iconMemo);
+    if (keys.length > 200) delete iconMemo[keys[0]];
+    try {
+      localStorage.setItem(ICON_MEMO, JSON.stringify(iconMemo));
+    } catch {
+      /* a convenience only */
+    }
+  }
+
   function iconNode(shortcut) {
     const box = el('span', { class: 'tile-icon', style: `--site:${R.siteColor(shortcut)}` });
-    const sources = R.iconSources(shortcut);
+    let sources = R.iconSources(shortcut);
+    const memo = shortcut.icon ? undefined : iconMemo[shortcut.url];
+    // A site with no icon is retried after a few days, in case it was offline.
+    if (typeof memo === 'string' && memo.startsWith('letter:') && Date.now() - Number(memo.slice(7)) < 3 * 864e5) sources = [];
+    else if (typeof memo === 'string' && sources.includes(memo)) sources = [memo, ...sources.filter((x) => x !== memo)];
     const letter = () => {
+      if (!shortcut.icon && !preview && sources.length) rememberIcon(shortcut.url, `letter:${Date.now()}`);
       box.classList.add('lettered');
       const name = shortcut.title || R.hostOf(shortcut.url) || '?';
       box.replaceChildren(el('span', { class: 'letter' }, name.trim()[0]?.toUpperCase() || '•'));
@@ -182,6 +208,7 @@
         const vector = /\.svg$/i.test(sources[i]) || sources[i].startsWith('data:image/svg');
         if (!vector && (shortcut.icon || img.naturalWidth >= 96)) img.classList.add('full');
         if (img.naturalWidth <= 1) return tryNext(i + 1);
+        if (!shortcut.icon && !preview) rememberIcon(shortcut.url, sources[i]);
       });
       img.addEventListener('error', () => tryNext(i + 1), { once: true });
       img.src = sources[i];
@@ -657,6 +684,7 @@
     }
     const group = $('ed-group').value === '__new' ? '' : $('ed-group').value;
     const item = { ...draft, url, title: $('ed-title').value.trim() || R.hostOf(url), group };
+    if (editing && editing.url !== url) delete iconMemo[editing.url];
     const groups = profile.groups;
     commit((st, pr) => {
       pr.groups = groups;
@@ -758,11 +786,19 @@
 
   // ─── Live updates ─────────────────────────────────────────────────────────
 
+  let rendered = false;
   async function reload() {
-    state = await R.load();
-    profile = R.activeProfile(state);
-    bgImage = await R.getImage(profile.id);
+    const next = await R.load();
+    const nextProfile = R.activeProfile(next);
+    const nextImage = await R.getImage(nextProfile.id);
+    // Our own saves come back as change events; skip the redraw when nothing
+    // actually changed, so icons don't reload.
+    if (rendered && JSON.stringify(next) === JSON.stringify(state) && nextImage === bgImage) return;
+    state = next;
+    profile = nextProfile;
+    bgImage = nextImage;
     render();
+    rendered = true;
   }
   R.onChange(reload);
   // Personalize's live preview asks the page to refresh after each change.
