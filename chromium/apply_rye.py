@@ -245,10 +245,14 @@ def patch_multi_contents_view(text, src):
         'constexpr float kRyeContentCornerRadius = 10;\n'
         '\n'
         'bool RyeFloatsContents(const BrowserView* browser_view) {\n'
-        '  return browser_view && browser_view->browser() &&\n'
+        '  // Layout can run before the window exists or after it closes, so ask\n'
+        '  // the widget directly rather than BrowserView::IsFullscreen().\n'
+        '  const views::Widget* widget =\n'
+        '      browser_view ? browser_view->GetWidget() : nullptr;\n'
+        '  return widget && browser_view->browser() &&\n'
         '         browser_view->browser()->GetType() ==\n'
         '             BrowserWindowInterface::TYPE_NORMAL &&\n'
-        '         !browser_view->IsFullscreen();\n'
+        '         !widget->IsFullscreen();\n'
         '}\n'
         '\n'
         'gfx::RoundedCornersF RyeContentCorners(const BrowserView* browser_view,\n'
@@ -313,6 +317,10 @@ def patch_multi_contents_view(text, src):
         '    GetActiveContentsContainerView()->SetRoundedCorners(\n'
         '        RyeContentCorners(browser_view_, GetBackgroundRadii()));\n'
         '  }\n\n')
+    if '#include "ui/views/widget/widget.h"' not in text:
+        text = insert_after(
+            text, '#include "chrome/browser/ui/views/frame/browser_view.h"\n',
+            '#include "ui/views/widget/widget.h"  // Rye\n')
     if '#include "chrome/browser/ui/browser_window/public/browser_window_interface.h"' not in text:
         text = insert_after(
             text, '#include "chrome/browser/ui/views/frame/browser_view.h"\n',
