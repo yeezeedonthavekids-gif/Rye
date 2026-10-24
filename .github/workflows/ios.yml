@@ -6,6 +6,9 @@ on:
     paths: ['mobile/ios/**', 'chromium/extensions/rye-newtab/**', '.github/workflows/ios.yml']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   ipa:
     runs-on: macos-15
@@ -33,10 +36,28 @@ jobs:
           cp -R build/Build/Products/Release-iphoneos/Rye.app Payload/
           zip -qry Rye.ipa Payload
           ls -lh Rye.ipa
+          # Rye's pages and the app icon must be inside the app.
+          unzip -l Rye.ipa | grep -E "rye-newtab/(newtab.html|core.js|personalize.html)|Assets.car|Rye.app/Rye$"
+          test "$(unzip -l Rye.ipa | grep -c 'rye-newtab/')" -ge 10
       - uses: actions/upload-artifact@v4
         with:
           name: rye-ios
           path: mobile/ios/Rye.ipa
+      # A direct download link for phones: the "ios-preview" pre-release.
+      - name: Publish to the iPhone preview release
+        if: github.event_name != 'pull_request'
+        working-directory: mobile/ios
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Rye for iPhone and iPad, built from ${GITHUB_SHA::7}. Open Rye.ipa in LiveContainer, AltStore or SideStore. This build isn't signed; those apps sign it on your phone."
+          if gh release view ios-preview >/dev/null 2>&1; then
+            gh release upload ios-preview Rye.ipa --clobber
+            gh release edit ios-preview --notes "$notes"
+          else
+            gh release create ios-preview Rye.ipa --prerelease --target "$GITHUB_SHA" \
+              --title "Rye for iPhone (preview)" --notes "$notes"
+          fi
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
