@@ -209,7 +209,15 @@ body {
   background: conic-gradient(#e9e6e1 0 50%, #2b2a28 0);
 }
 .swatch.custom {
-  background: conic-gradient(from 90deg, #ef8a68, #e3b55b, #7cb873, #2fb9d4, #a487e0, #e07a9b, #ef8a68);
+  display: grid;
+  place-items: center;
+  background: var(--raised-2);
+  color: var(--text-2);
+}
+.swatch.custom::after {
+  content: '+';
+  font-size: 16px;
+  line-height: 1;
 }
 .hex {
   width: 96px !important;

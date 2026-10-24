@@ -36,6 +36,7 @@
   --t-slow: 320ms;
   --font: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-serif: 'Sitka Display', 'Sitka Heading', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
   color-scheme: dark;
 }
 :root[data-scheme='light'] {

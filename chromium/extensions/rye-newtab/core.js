@@ -15,14 +15,14 @@
   // ─── Catalogs ─────────────────────────────────────────────────────────────
 
   // surface: the tint Rye's surfaces are built from (null = warm neutrals).
-  // accent: the default accent; accent2 pairs with it for gradient accents.
+  // accent: the default accent.
   const PRESETS = {
     rye: { name: 'Rye', note: 'Warm neutrals, quiet blue', surface: null, accent: null, accent2: '#9db48a', scheme: 'system' },
     midnight: { name: 'Midnight', note: 'Deep charcoal, muted blue', surface: '#1f2532', accent: '#86a3d0', accent2: '#9b8fd6', scheme: 'dark' },
     lavender: { name: 'Lavender', note: 'Soft purple, cool surfaces', surface: '#2b2536', accent: '#b8a1e8', accent2: '#e39cc4', scheme: 'dark' },
     ocean: { name: 'Ocean', note: 'Deep navy, bright cyan', surface: '#0f2542', accent: '#2fc6e0', accent2: '#5b8cf0', scheme: 'dark' },
     forest: { name: 'Forest', note: 'Dark green, natural highlights', surface: '#1b2c20', accent: '#8fc27e', accent2: '#d6c46a', scheme: 'dark' },
-    sunset: { name: 'Sunset', note: 'Coral and amber over plum', surface: '#33202f', accent: '#f2895f', accent2: '#f5b84a', scheme: 'dark' },
+    sunset: { name: 'Sunset', note: 'Coral over plum', surface: '#33202f', accent: '#f2895f', accent2: '#f5b84a', scheme: 'dark' },
     softlight: { name: 'Soft Light', note: 'Warm white, gentle color', surface: '#f2e8dc', accent: '#d4694f', accent2: '#c9789f', scheme: 'light' },
   };
 
@@ -50,21 +50,15 @@
   const svg = (body, w = 1600, h = 1000) =>
     `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}' preserveAspectRatio='xMidYMid slice'>${body}</svg>`)}")`;
   const GALLERY = [
-    { id: 'dusk', name: 'Dusk', tone: 'dark', css: 'linear-gradient(165deg, #2b2340 0%, #4a2f45 55%, #a0574a 100%)' },
-    { id: 'lagoon', name: 'Lagoon', tone: 'dark', css: 'linear-gradient(160deg, #0d2238 0%, #12485a 60%, #1f7f86 100%)' },
-    { id: 'meadow', name: 'Meadow', tone: 'light', css: 'linear-gradient(170deg, #eef1e4 0%, #d7e3c8 60%, #b9cfa4 100%)' },
-    { id: 'mist', name: 'Mist', tone: 'light', css: 'linear-gradient(180deg, #f3f1ee 0%, #e3e6ea 100%)' },
+    { id: 'paper', name: 'Paper', tone: 'light', css: '#f1ece3' },
+    { id: 'ink', name: 'Ink', tone: 'dark', css: '#15171b' },
     {
       id: 'ridgeline', name: 'Ridgeline', tone: 'dark',
-      css: svg(`<defs><linearGradient id='s' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#f0b27a'/><stop offset='.55' stop-color='#8a6f8f'/><stop offset='1' stop-color='#3a3550'/></linearGradient></defs><rect width='1600' height='1000' fill='url(#s)'/><circle cx='1290' cy='300' r='38' fill='#f8d9a8' opacity='.7'/><path d='M0 640 L220 520 L390 600 L610 450 L820 580 L1010 470 L1240 590 L1430 500 L1600 560 V1000 H0Z' fill='#5d4d6c'/><path d='M0 760 L180 650 L420 730 L640 610 L900 720 L1120 640 L1360 740 L1600 660 V1000 H0Z' fill='#3f3650'/><path d='M0 880 L260 790 L520 860 L780 780 L1060 870 L1340 800 L1600 860 V1000 H0Z' fill='#29243a'/>`),
+      css: svg(`<rect width='1600' height='1000' fill='#d9a77f'/><rect y='330' width='1600' height='670' fill='#b98a83'/><circle cx='1290' cy='250' r='38' fill='#f3d6ab'/><path d='M0 640 L220 520 L390 600 L610 450 L820 580 L1010 470 L1240 590 L1430 500 L1600 560 V1000 H0Z' fill='#6d5a72'/><path d='M0 760 L180 650 L420 730 L640 610 L900 720 L1120 640 L1360 740 L1600 660 V1000 H0Z' fill='#4a3f57'/><path d='M0 880 L260 790 L520 860 L780 780 L1060 870 L1340 800 L1600 860 V1000 H0Z' fill='#2e2839'/>`),
     },
     {
       id: 'dunes', name: 'Dunes', tone: 'light',
       css: svg(`<rect width='1600' height='1000' fill='#f3e3cf'/><path d='M0 560 C300 470 520 620 820 540 S1350 460 1600 540 V1000 H0Z' fill='#e9cfae'/><path d='M0 700 C260 640 560 760 860 690 S1380 620 1600 700 V1000 H0Z' fill='#ddb98f'/><path d='M0 840 C320 790 600 890 920 830 S1400 790 1600 840 V1000 H0Z' fill='#cfa173'/>`),
-    },
-    {
-      id: 'aurora', name: 'Aurora', tone: 'dark',
-      css: svg(`<defs><radialGradient id='a' cx='.3' cy='.2' r='.8'><stop offset='0' stop-color='#3fd0a4' stop-opacity='.55'/><stop offset='1' stop-color='#3fd0a4' stop-opacity='0'/></radialGradient><radialGradient id='b' cx='.75' cy='.3' r='.7'><stop offset='0' stop-color='#7a6cf0' stop-opacity='.5'/><stop offset='1' stop-color='#7a6cf0' stop-opacity='0'/></radialGradient></defs><rect width='1600' height='1000' fill='#0c1424'/><rect width='1600' height='1000' fill='url(#a)'/><rect width='1600' height='1000' fill='url(#b)'/><path d='M0 860 L300 800 L520 850 L800 780 L1100 840 L1400 790 L1600 830 V1000 H0Z' fill='#08101c'/>`),
     },
     {
       id: 'contours', name: 'Contours', tone: 'dark',
@@ -73,6 +67,10 @@
     {
       id: 'dots', name: 'Dot grid', tone: 'light',
       css: `radial-gradient(circle at 1px 1px, rgba(60,50,40,.18) 1px, transparent 1.4px) 0 0 / 22px 22px, #f6f3ee`,
+    },
+    {
+      id: 'ruled', name: 'Ruled', tone: 'light',
+      css: `repeating-linear-gradient(transparent 0 31px, rgba(70,90,120,.13) 31px 32px), #f7f4ec`,
     },
   ];
 
@@ -93,7 +91,7 @@
     return {
       id: uid('p'),
       label: name,
-      identity: { name: '', greeting: 'time', custom: 'Hello, {name}.' },
+      identity: { name: '', greeting: 'rotating', custom: 'Hello, {name}.' },
       look: { preset: 'rye', scheme: 'system', accentMode: 'preset', accent: '#6f93c9', gradient: false, shape: 'rounded' },
       layout: {
         style: 'minimal', placement: 'center', searchWidth: 'regular', searchPosition: 'upper',
@@ -116,7 +114,7 @@
 
   function defaultState() {
     const p = defaultProfile();
-    return { version: 1, onboarded: false, active: p.id, profiles: [p] };
+    return { version: 2, onboarded: false, active: p.id, profiles: [p] };
   }
 
   // ─── Validation ───────────────────────────────────────────────────────────
@@ -171,7 +169,7 @@
       label: str(r.label, d.label, 40).trim() || d.label,
       identity: {
         name: str(i.name, '', 40).trim(),
-        greeting: oneOf(i.greeting, ['time', 'hello', 'welcome', 'custom', 'none'], d.identity.greeting),
+        greeting: oneOf(i.greeting, ['rotating', 'time', 'hello', 'welcome', 'custom', 'none'], d.identity.greeting),
         custom: str(i.custom, d.identity.custom, 80),
       },
       look: {
@@ -179,7 +177,7 @@
         scheme: oneOf(l.scheme, ['system', 'light', 'dark'], d.look.scheme),
         accentMode: oneOf(l.accentMode, ['preset', 'custom', 'mono'], d.look.accentMode),
         accent: hex(l.accent, d.look.accent),
-        gradient: bool(l.gradient, d.look.gradient),
+        gradient: false, // gradient accents were retired
         shape: oneOf(l.shape, ['soft', 'rounded', 'extra'], d.look.shape),
       },
       layout: {
@@ -212,8 +210,11 @@
     const profiles = (Array.isArray(r.profiles) ? r.profiles : []).slice(0, 8).map((p) => sanitizeProfile(p));
     const unique = profiles.filter((p, i) => profiles.findIndex((q) => q.id === p.id) === i);
     if (!unique.length) return defaultState();
+    if (r.version === 1) {
+      for (const p of unique) if (p.identity.greeting === 'time') p.identity.greeting = 'rotating';
+    }
     return {
-      version: 1,
+      version: 2,
       onboarded: bool(r.onboarded, false),
       active: unique.some((p) => p.id === r.active) ? r.active : unique[0].id,
       profiles: unique,
@@ -427,14 +428,13 @@
     set('--hairline', p.hairline); set('--hover', p.hover); set('--press', p.press);
     set('--accent', p.accent); set('--accent-2', p.accent2); set('--on-accent', p.onAccent);
     set('--accent-soft', p.accentSoft); set('--accent-text', p.accentText); set('--scrim', p.scrim);
-    set('--accent-fill', profile.look.gradient ? `linear-gradient(135deg, ${p.accent}, ${p.accent2})` : p.accent);
+    set('--accent-fill', p.accent);
     for (const [k, v] of Object.entries(shape)) set(`--r-${k}`, `${v}px`);
     const iconR = { auto: `${shape.icon}px`, square: `${Math.max(4, shape.sm - 2)}px`, squircle: '32%', circle: '50%' }[profile.layout.iconShape];
     set('--r-tile', iconR);
     el.dataset.scheme = dark ? 'dark' : 'light';
     el.dataset.shape = profile.look.shape;
     el.dataset.motion = effectiveMotion(profile);
-    el.dataset.gradient = String(profile.look.gradient);
     return p;
   }
 
@@ -518,18 +518,76 @@
     return 'Hello';
   }
 
-  // Returns { lead, name } so pages can style the name on its own, or null.
-  function greeting(profile, date = new Date()) {
-    const { name, greeting: style, custom } = profile.identity;
+  // Short lines for the "Changes each time" greeting. {name} is where the
+  // name goes; without a name, ", {name}" is dropped.
+  const LINES = {
+    morning: ['Good morning, {name}.', 'Morning, {name}.', 'Up early, {name}?', 'A fresh start, {name}.', 'Coffee first, {name}?'],
+    afternoon: ['Good afternoon, {name}.', 'Afternoon, {name}.', 'Back at it, {name}.', 'Hope it’s a good one, {name}.'],
+    evening: ['Good evening, {name}.', 'Evening, {name}.', 'Winding down, {name}?', 'An easy evening, {name}?'],
+    night: ['Still up, {name}?', 'A late one, {name}?', 'Quiet hours, {name}.', 'Burning the midnight oil, {name}?'],
+    any: ['Welcome back, {name}.', 'Where to, {name}?', 'What’s next, {name}?', 'Hello again, {name}.', 'Nice to see you, {name}.'],
+  };
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  function linesFor(date) {
+    const h = date.getHours();
+    const part = h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 17 ? 'afternoon' : h >= 17 && h < 22 ? 'evening' : 'night';
+    const day = date.getDay();
+    const special = [];
+    if (day === 1 && h < 17) special.push('A new week, {name}.');
+    if (day === 5) special.push('Happy Friday, {name}.');
+    if (day === 0 || day === 6) special.push(`Happy ${DAYS[day]}, {name}.`, `A slow ${DAYS[day]}, {name}?`);
+    // Time of day weighs most; a few general lines keep it from repeating.
+    return [...LINES[part], ...LINES[part], ...special, ...LINES.any];
+  }
+
+  // Names typed all in lowercase are shown with capitals ("jackson" → "Jackson").
+  function displayName(name) {
+    if (!name || name !== name.toLowerCase()) return name;
+    return name.replace(/(^|[\s'-])(\p{Ll})/gu, (m, sep, ch) => sep + ch.toUpperCase());
+  }
+
+  // Splits a line into parts so pages can set the name on its own.
+  function partsOf(line, name) {
+    const text = name ? line : line.replace(/,?\s*\{name\}/g, '');
+    if (!name) return [{ text }];
+    return text.split(/(\{name\})/).filter(Boolean).map((t) => (t === '{name}' ? { text: name, name: true } : { text: t }));
+  }
+
+  // Returns the greeting as [{ text, name? }] parts, or null when hidden.
+  // `random` picks a line for the rotating style; the same line isn't shown
+  // twice in a row.
+  function greeting(profile, { date = new Date(), random = Math.random, remember = false } = {}) {
+    const { greeting: style, custom } = profile.identity;
+    const name = displayName(profile.identity.name);
     if (!profile.show.greeting || style === 'none') return null;
     if (style === 'custom') {
       const text = (custom || '').trim();
-      if (!text) return null;
-      return { text: name ? text.replaceAll('{name}', name) : text.replace(/,?\s*\{name\}/g, '') };
+      return text ? partsOf(text, name) : null;
     }
-    const lead = style === 'hello' ? 'Hello' : style === 'welcome' ? 'Welcome back' : partOfDay(date);
-    return name ? { lead: `${lead},`, name: `${name}.` } : { text: `${lead}.` };
+    if (style === 'hello') return partsOf('Hello, {name}.', name);
+    if (style === 'welcome') return partsOf('Welcome back, {name}.', name);
+    if (style === 'time') return partsOf(`${partOfDay(date)}, {name}.`, name);
+    const lines = linesFor(date);
+    let last = null;
+    try {
+      last = localStorage.getItem('rye.lastLine');
+    } catch {
+      /* no memory of the last line */
+    }
+    const choices = lines.filter((l) => l !== last);
+    const line = choices[Math.floor(random() * choices.length)] || lines[0];
+    if (remember) {
+      try {
+        localStorage.setItem('rye.lastLine', line);
+      } catch {
+        /* fine */
+      }
+    }
+    return partsOf(line, name);
   }
+
+  const greetingText = (parts) => (parts ? parts.map((p) => p.text).join('') : '');
 
   // ─── Sites ────────────────────────────────────────────────────────────────
 
@@ -603,7 +661,7 @@
     load, save, activeProfile, getImage, setImage, onChange, encodeImage,
     palette, applyTokens, isDark, accentOf, hexToHsl, hslToHex, effectiveMotion,
     applyToBrowser, browserBridgeAvailable, browserValues,
-    greeting, partOfDay, hostOf, knownSite, iconSources, siteColor, safeUrl,
+    greeting, greetingText, displayName, partOfDay, hostOf, knownSite, iconSources, siteColor, safeUrl,
     exportProfile, importProfile,
   };
 })();

@@ -16,7 +16,7 @@
   const profile = () => N().profile;
 
   const RYE_MARK =
-    '<svg viewBox="0 0 48 48" width="56" height="56" aria-hidden="true"><defs><linearGradient id="ob-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/></linearGradient></defs><rect width="48" height="48" rx="14" fill="url(#ob-g)"/><path d="M17 36V23.5c0-5.4 3.9-9.3 8.9-9.6" fill="none" stroke="var(--on-accent)" stroke-width="4.2" stroke-linecap="round"/><circle cx="31.5" cy="14.2" r="3.4" fill="var(--on-accent)"/></svg>';
+    '<svg viewBox="0 0 48 48" width="56" height="56" aria-hidden="true"><rect width="48" height="48" rx="14" fill="var(--accent)"/><path d="M17 36V23.5c0-5.4 3.9-9.3 8.9-9.6" fill="none" stroke="var(--on-accent)" stroke-width="4.2" stroke-linecap="round"/><circle cx="31.5" cy="14.2" r="3.4" fill="var(--on-accent)"/></svg>';
 
   function open(fromStep = 0) {
     step = fromStep;
@@ -87,14 +87,15 @@
       input.setAttribute('aria-invalid', String(invalid));
       hint.textContent = invalid ? 'Rye leaves out < > { } in names.' : 'Only stored on this computer. You can change or remove it any time.';
       nameDraft = clean;
-      const g = R.greeting({ ...profile(), identity: { ...profile().identity, name: clean }, show: { ...profile().show, greeting: true } });
-      previewLine.replaceChildren(
-        g?.text ? el('span', { class: 'hello-name' }, g.text) : el('span', {}, el('span', { class: 'hello-lead' }, g?.lead || ''), ' ', el('span', { class: 'hello-name' }, g?.name || '')),
-      );
+      // A steady preview: the rotating style shows its time-of-day line here.
+      const id = { ...profile().identity, name: clean };
+      if (id.greeting === 'rotating') id.greeting = 'time';
+      const g = R.greeting({ ...profile(), identity: id, show: { ...profile().show, greeting: true } }) || [];
+      previewLine.replaceChildren(...g.map((p) => (p.name ? el('span', { class: 'hello-name' }, p.text) : p.text)));
     };
     const renderStyles = () =>
       styles.replaceChildren(
-        ...[['time', 'Time of day'], ['hello', 'Hello'], ['welcome', 'Welcome back']].map(([v, t]) =>
+        ...[['rotating', 'Changes each time'], ['time', 'Time of day'], ['hello', 'Hello']].map(([v, t]) =>
           el('button', {
             type: 'button',
             'aria-pressed': String(profile().identity.greeting === v),
@@ -234,7 +235,7 @@
           toggle('Frequently visited sites', null, p.show.frequent, (st, pr) => (pr.show.frequent = !pr.show.frequent)),
           toggle('Tabs in a sidebar', 'Vertical tabs down the side of the window', p.layout.sidebar, (st, pr) => (pr.layout.sidebar = !pr.layout.sidebar)),
         ),
-        el('div', { class: 'ob-layouts', role: 'radiogroup', 'aria-label': 'New tab layout' }, layoutCard('minimal', 'Minimal', 'Quiet and centered'), layoutCard('expressive', 'Expressive', 'Bigger greeting, colorful shortcuts')),
+        el('div', { class: 'ob-layouts', role: 'radiogroup', 'aria-label': 'New tab layout' }, layoutCard('minimal', 'Minimal', 'Quiet and centered'), layoutCard('expressive', 'Expressive', 'A larger greeting, more room')),
       ],
       foot: [back(), spacer(), next()],
     };
@@ -248,7 +249,7 @@
     mark.innerHTML = RYE_MARK;
     const bits = [R.PRESETS[p.look.preset].name, { system: 'Matches Windows', light: 'Light', dark: 'Dark' }[p.look.scheme], R.ENGINES[p.search.engine].name, p.layout.style === 'expressive' ? 'Expressive' : 'Minimal'];
     return {
-      body: [mark, ...heading(name ? `You’re all set, ${name}.` : 'You’re all set.', 'Everything here can be changed later from Customize on any new tab.'), el('ul', { class: 'ob-summary' }, ...bits.map((b) => el('li', {}, b)))],
+      body: [mark, ...heading(name ? `You’re all set, ${R.displayName(name)}.` : 'You’re all set.', 'Everything here can be changed later from Customize on any new tab.'), el('ul', { class: 'ob-summary' }, ...bits.map((b) => el('li', {}, b)))],
       foot: [back(), spacer(), next('Open Rye', finish)],
     };
   }

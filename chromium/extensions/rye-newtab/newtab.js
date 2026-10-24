@@ -121,13 +121,18 @@
     return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
   }
 
+  // A greeting is picked once per new tab, so redraws don't change it.
+  let greetingParts;
+  let greetingKey = '';
   function renderGreeting() {
-    const g = R.greeting(profile);
-    $('hello').hidden = !g;
-    if (!g) return;
-    const line = $('hello-line');
-    if (g.text) line.replaceChildren(el('span', { class: 'hello-name' }, g.text));
-    else line.replaceChildren(el('span', { class: 'hello-lead' }, g.lead), ' ', el('span', { class: 'hello-name' }, g.name));
+    const key = JSON.stringify([profile.id, profile.identity, profile.show.greeting]);
+    if (key !== greetingKey) {
+      greetingKey = key;
+      greetingParts = R.greeting(profile, { remember: !preview });
+    }
+    $('hello').hidden = !greetingParts;
+    if (!greetingParts) return;
+    $('hello-line').replaceChildren(...greetingParts.map((p) => (p.name ? el('span', { class: 'hello-name' }, p.text) : p.text)));
   }
 
   function renderTime() {
@@ -136,9 +141,9 @@
     if (!(clock || date)) return;
     const now = new Date();
     const parts = [];
-    if (clock) parts.push(now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
     if (date) parts.push(now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }));
-    $('time').textContent = parts.join('  ·  ');
+    if (clock) parts.push(now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+    $('time').textContent = parts.join('   ·   ');
   }
 
   function renderSearch() {
@@ -362,7 +367,7 @@
     const p = R.palette(look, dark);
     return el(
       'span',
-      { class: 'mini', style: `--m-frame:${p.frame};--m-base:${p.base};--m-sheet:${p.sheet};--m-omni:${p.sunken};--m-accent:${look.gradient ? `linear-gradient(135deg,${p.accent},${p.accent2})` : p.accent};--m-text:${p.text}` },
+      { class: 'mini', style: `--m-frame:${p.frame};--m-base:${p.base};--m-sheet:${p.sheet};--m-omni:${p.sunken};--m-accent:${p.accent};--m-text:${p.text}` },
       el('span', { class: 'mini-tabs' }, el('i', { class: 'mini-tab' }), el('i', { class: 'mini-tab off' })),
       el('span', { class: 'mini-wrap' }, el('span', { class: 'mini-bar' }, el('i', { class: 'mini-omni' })), el('span', { class: 'mini-page' }, el('i', { class: 'mini-hello' }), el('i', { class: 'mini-search' }), el('span', { class: 'mini-dots' }, el('i'), el('i'), el('i')))),
     );
@@ -504,7 +509,7 @@
     $('panel-body').replaceChildren(
       section('Look', presets),
       section('Mode', segmented([['system', 'System'], ['light', 'Light'], ['dark', 'Dark']], look.scheme, (v) => commit((st, pr) => (pr.look.scheme = v)), 'Light or dark')),
-      section('Accent', accentSwatches, toggleRow('Gradient accent', look.gradient, () => commit((st, pr) => (pr.look.gradient = !pr.look.gradient)))),
+      section('Accent', accentSwatches),
       section('Corners', segmented([['soft', 'Soft'], ['rounded', 'Rounded'], ['extra', 'Extra round']], look.shape, (v) => commit((st, pr) => (pr.look.shape = v), { undo: 'Corner style changed' }), 'Corner style')),
       section(
         'Background',

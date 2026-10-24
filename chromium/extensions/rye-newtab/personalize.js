@@ -120,7 +120,7 @@
     const p = R.palette(look, dark);
     return el(
       'span',
-      { class: 'mini', style: `--m-frame:${p.frame};--m-base:${p.base};--m-sheet:${p.sheet};--m-omni:${p.sunken};--m-accent:${look.gradient ? `linear-gradient(135deg,${p.accent},${p.accent2})` : p.accent};--m-text:${p.text}` },
+      { class: 'mini', style: `--m-frame:${p.frame};--m-base:${p.base};--m-sheet:${p.sheet};--m-omni:${p.sunken};--m-accent:${p.accent};--m-text:${p.text}` },
       el('span', { class: 'mini-tabs' }, el('i', { class: 'mini-tab' }), el('i', { class: 'mini-tab off' })),
       el('span', { class: 'mini-wrap' }, el('span', { class: 'mini-bar' }, el('i', { class: 'mini-omni' })), el('span', { class: 'mini-page' }, el('i', { class: 'mini-hello' }), el('i', { class: 'mini-search' }), el('span', { class: 'mini-dots' }, el('i'), el('i'), el('i')))),
     );
@@ -148,16 +148,16 @@
 
     const custom = el('input', { class: 'field', value: id.custom, maxlength: '80', placeholder: 'Hello, {name}.', 'aria-label': 'Custom greeting' });
     custom.addEventListener('change', () => commit((st, p) => (p.identity.custom = custom.value)));
-    const sample = R.greeting({ ...profile, show: { ...profile.show, greeting: true } });
-    const sampleText = sample ? sample.text || `${sample.lead} ${sample.name}` : 'No greeting';
+    const sampleProfile = { ...profile, identity: { ...id, greeting: id.greeting === 'rotating' ? 'time' : id.greeting }, show: { ...profile.show, greeting: true } };
+    const sampleText = R.greetingText(R.greeting(sampleProfile)) || 'No greeting';
 
     return section(
       'identity', 'Identity', 'How Rye greets you on new tabs.',
       resetPart('Identity', (p, d) => (p.identity = d.identity)),
       group(null,
         row('Preferred name', 'Stored only on this computer. Leave empty for a greeting without a name.', el('div', {}, name, nameError)),
-        row('Show greeting', `Now: “${sampleText}”`, toggle('Show greeting', profile.show.greeting, () => commit((st, p) => (p.show.greeting = !p.show.greeting)))),
-        row('Greeting style', null, segmented('Greeting style', [['time', 'Time of day'], ['hello', 'Hello'], ['welcome', 'Welcome back'], ['custom', 'Custom']], id.greeting, (v) => commit((st, p) => (p.identity.greeting = v)))),
+        row('Show greeting', id.greeting === 'rotating' ? `A different line on each new tab, like “${sampleText}”` : `Now: “${sampleText}”`, toggle('Show greeting', profile.show.greeting, () => commit((st, p) => (p.show.greeting = !p.show.greeting)))),
+        row('Greeting style', null, segmented('Greeting style', [['rotating', 'Changes each time'], ['time', 'Time of day'], ['hello', 'Hello'], ['custom', 'Custom']], id.greeting, (v) => commit((st, p) => (p.identity.greeting = v)))),
         id.greeting === 'custom' ? row('Your greeting', 'Write {name} where your name goes.', custom) : null,
       ),
     );
@@ -224,12 +224,11 @@
 
     return section(
       'colors', 'Colors', 'Recolors the whole browser: frame, tabs, toolbar, address bar, menus, dialogs and Rye’s pages.',
-      resetPart('Colors', (p, d) => (p.look = { ...p.look, preset: d.look.preset, scheme: d.look.scheme, accentMode: d.look.accentMode, accent: d.look.accent, gradient: d.look.gradient })),
+      resetPart('Colors', (p, d) => (p.look = { ...p.look, preset: d.look.preset, scheme: d.look.scheme, accentMode: d.look.accentMode, accent: d.look.accent})),
       group('Theme', presets),
       group(null,
         row('Mode', null, segmented('Light or dark', [['system', 'Match Windows'], ['light', 'Light'], ['dark', 'Dark']], look.scheme, (v) => commit((st, p) => (p.look.scheme = v)))),
         row('Accent', 'Used for focus rings, toggles, selection and highlights. Rye keeps it readable in light and dark.', el('div', {}, accents, hexError)),
-        row('Gradient accent', 'Blends the accent into a second color on buttons, toggles and your name.', toggle('Gradient accent', look.gradient, () => commit((st, p) => (p.look.gradient = !p.look.gradient)))),
       ),
     );
   }
@@ -261,7 +260,7 @@
         p.search = d.search;
       }),
       group('New tab',
-        row('Style', 'Expressive gives the greeting more presence and colors each shortcut.', segmented('New tab style', [['minimal', 'Minimal'], ['expressive', 'Expressive']], y.style, (v) => commit((st, p) => (p.layout.style = v)))),
+        row('Style', 'Expressive sets the greeting larger and gives shortcuts more room.', segmented('New tab style', [['minimal', 'Minimal'], ['expressive', 'Expressive']], y.style, (v) => commit((st, p) => (p.layout.style = v)))),
         row('Placement', null, segmented('Content placement', [['center', 'Centered'], ['left', 'Left']], y.placement, (v) => commit((st, p) => (p.layout.placement = v)))),
         row('Search position', null, segmented('Search position', [['upper', 'Upper'], ['middle', 'Middle']], y.searchPosition, (v) => commit((st, p) => (p.layout.searchPosition = v)))),
         row('Search width', null, segmented('Search width', [['narrow', 'Narrow'], ['regular', 'Regular'], ['wide', 'Wide']], y.searchWidth, (v) => commit((st, p) => (p.layout.searchWidth = v)))),
@@ -380,7 +379,7 @@
         return el(
           'div',
           { class: 'profile', 'data-active': String(active) },
-          el('span', { class: 'profile-avatar', style: `background:${p.look.gradient ? `linear-gradient(135deg,${pal.accent},${pal.accent2})` : pal.accent};color:${pal.onAccent}` }, (p.identity.name || p.label)[0]?.toUpperCase() || '·'),
+          el('span', { class: 'profile-avatar', style: `background:${pal.accent};color:${pal.onAccent}` }, (p.identity.name || p.label)[0]?.toUpperCase() || '·'),
           el('span', { class: 'profile-name' }, label, el('small', {}, `${R.PRESETS[p.look.preset].name}${p.identity.name ? ` · ${p.identity.name}` : ''}`)),
           active ? el('span', { class: 'badge' }, 'In use') : el('button', { class: 'btn', type: 'button', onclick: () => switchTo(p.id) }, 'Use'),
           el('button', { class: 'btn ghost', type: 'button', onclick: () => duplicate(p.id) }, 'Duplicate'),

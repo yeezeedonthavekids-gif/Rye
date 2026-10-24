@@ -3,8 +3,7 @@
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  background: radial-gradient(1100px 520px at 50% -12%, var(--accent-soft), transparent 70%), var(--sheet);
-  background-attachment: fixed;
+  background: var(--sheet);
 }
 
 /* Over photos and dark artwork, text turns light and surfaces turn to glass. */
@@ -88,104 +87,72 @@ body[data-tone='light'] {
 
 /* ─── Greeting ────────────────────────────────────────────────────────────── */
 .hello {
-  margin-bottom: 18px;
+  margin-bottom: 26px;
 }
 .hello-line {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: -0.022em;
-  line-height: 1.15;
+  font-family: var(--font-serif);
+  font-size: 44px;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+  line-height: 1.1;
   text-wrap: balance;
+  color: var(--text);
 }
 .stage[data-placement='center'] .hello-line {
   text-align: center;
 }
-.hello-lead {
-  color: var(--text-2);
-  font-weight: 450;
-}
 .hello-name {
-  color: var(--text);
+  font-style: italic;
 }
-:root[data-gradient='true'] .hello-name {
-  background: var(--accent-fill);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-/* Expressive: the name gets a line of its own and more weight. */
 .stage[data-style='expressive'] .hello-line {
-  display: flex;
-  flex-direction: column;
-  font-size: 46px;
-  font-weight: 680;
-  letter-spacing: -0.032em;
+  font-size: 60px;
+  letter-spacing: -0.02em;
   line-height: 1.02;
 }
-.stage[data-style='expressive'] .hello-lead {
-  margin-bottom: 6px;
-  font-size: 19px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-.stage[data-style='expressive'][data-placement='center'] .hello-line {
-  align-items: center;
-}
-.stage[data-style='expressive'] .hello-name {
-  color: var(--accent-text);
-}
-body[data-tone] .stage[data-style='expressive'] .hello-name {
-  color: var(--text);
-}
 
+/* A dateline above the greeting, set small like a newspaper's. */
 .time {
-  margin: -10px 0 18px;
+  margin: 0 0 12px;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-}
-.stage[data-style='expressive'] .time {
-  margin-top: -4px;
-  font-size: 14px;
 }
 
 /* ─── Search ──────────────────────────────────────────────────────────────── */
 .search {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  height: 52px;
-  padding: 0 14px 0 18px;
-  border-radius: var(--r-xl);
+  height: 50px;
+  padding: 0 18px;
+  border-radius: var(--r-lg);
   background: var(--base);
-  box-shadow: inset 0 0 0 1px var(--hairline), 0 1px 0 rgba(0, 0, 0, 0.12);
   color: var(--text-3);
-  transition: box-shadow var(--t-med) ease, background-color var(--t-med) ease;
+  transition: background-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
 }
 :root[data-shape='extra'] .search {
   border-radius: 999px;
-  padding-left: 22px;
+  padding: 0 22px;
 }
 .search:hover {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hairline), var(--text) 10%), 0 1px 0 rgba(0, 0, 0, 0.12);
+  background: color-mix(in srgb, var(--base), var(--text) 3%);
 }
 .search:focus-within {
   background: var(--raised);
-  color: var(--accent-text);
-  box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 0 4px var(--accent-soft), 0 10px 30px -14px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--text-2);
 }
 body[data-tone] .search {
   background: var(--glass);
-  backdrop-filter: blur(20px) saturate(1.3);
+  backdrop-filter: blur(20px);
 }
 .search-icon {
   flex: none;
-  transition: color var(--t-med) ease;
 }
 .search input {
   flex: 1;
@@ -194,7 +161,7 @@ body[data-tone] .search {
   border: 0;
   background: transparent;
   color: var(--text);
-  font-size: 15.5px;
+  font-size: 15px;
   outline: none;
 }
 .search input::placeholder {
@@ -204,25 +171,9 @@ body[data-tone] .search {
   color: var(--text-3);
   font-size: 12px;
   white-space: nowrap;
-  transition: opacity var(--t-fast) ease;
 }
-.search-key {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  box-shadow: inset 0 0 0 1px var(--hairline);
-  color: var(--text-3);
-  font: 600 11px var(--font);
-  transition: opacity var(--t-fast) ease;
-}
-.search:focus-within .search-key,
 .search:focus-within .search-engine {
-  opacity: 0;
-}
-.stage[data-style='expressive'] .search {
-  height: 56px;
+  visibility: hidden;
 }
 
 /* ─── Note ────────────────────────────────────────────────────────────────── */
@@ -322,8 +273,8 @@ body[data-tone] .group-chip[aria-pressed='true'] {
   flex-direction: column;
   align-items: center;
   gap: 9px;
-  width: 92px;
-  padding: 12px 6px 10px;
+  width: 88px;
+  padding: 12px 4px 10px;
   border: 0;
   border-radius: var(--r-lg);
   background: transparent;
@@ -342,45 +293,34 @@ body[data-tone] .group-chip[aria-pressed='true'] {
   display: grid;
   place-items: center;
   flex: none;
-  width: 52px;
-  height: 52px;
-  overflow: hidden;
+  width: 40px;
+  height: 40px;
   border-radius: var(--r-tile);
-  background: var(--raised);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-  transition: transform var(--t-med) var(--ease-spring);
+  transition: transform var(--t-med) var(--ease);
 }
 .tile-link:hover .tile-icon {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 .tile-icon img {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 .tile-icon img.full {
-  width: 100%;
-  height: 100%;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-tile);
   object-fit: cover;
 }
 .tile-icon .letter {
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 650;
+  font-family: var(--font-serif);
+  font-size: 20px;
   color: #fff;
 }
 .tile-icon.lettered {
+  width: 34px;
+  height: 34px;
   background: var(--site);
-  box-shadow: none;
-}
-/* Expressive: each site's color washes its container. */
-.stage[data-style='expressive'] .tile-icon:not(.lettered) {
-  background: color-mix(in srgb, var(--site) 22%, var(--raised));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--site) 30%, transparent);
-}
-body[data-tone] .tile-icon:not(.lettered) {
-  background: var(--glass);
-  backdrop-filter: blur(14px);
 }
 .tile-title {
   max-width: 100%;
@@ -420,13 +360,10 @@ body[data-tone='image'] .tile-title {
   color: var(--text);
 }
 .tile-add .tile-icon {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--hairline);
   color: var(--text-3);
 }
 .tile-add:hover .tile-icon {
-  color: var(--accent-text);
-  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--text);
 }
 
 /* Compact: chips. */
@@ -438,11 +375,10 @@ body[data-tone='image'] .tile-title {
   gap: 9px;
   width: auto;
   max-width: 220px;
-  height: 38px;
-  padding: 0 14px 0 6px;
-  border-radius: 999px;
+  height: 36px;
+  padding: 0 14px 0 9px;
+  border-radius: var(--r-ctl);
   background: var(--base);
-  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 .shortcuts[data-style='compact'] .tile-link:hover {
   background: var(--raised);
@@ -452,16 +388,19 @@ body[data-tone] .shortcuts[data-style='compact'] .tile-link {
   backdrop-filter: blur(14px);
 }
 .shortcuts[data-style='compact'] .tile-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
+  width: 22px;
+  height: 22px;
+}
+.shortcuts[data-style='compact'] .tile-icon.lettered {
+  border-radius: 6px;
 }
 .shortcuts[data-style='compact'] .tile-link:hover .tile-icon {
   transform: none;
 }
-.shortcuts[data-style='compact'] .tile-icon img {
-  width: 16px;
-  height: 16px;
+.shortcuts[data-style='compact'] .tile-icon img,
+.shortcuts[data-style='compact'] .tile-icon img.full {
+  width: 18px;
+  height: 18px;
 }
 .shortcuts[data-style='compact'] .tile-icon .letter {
   font-size: 13px;
@@ -561,13 +500,13 @@ body[data-tone] .shortcuts[data-style='compact'] .tile-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 32px;
-  padding: 0 13px 0 10px;
+  height: 30px;
+  padding: 0 12px;
   border: 0;
   border-radius: var(--r-ctl);
   background: transparent;
-  color: var(--text-2);
-  font-weight: 550;
+  color: var(--text-3);
+  font-weight: 500;
   transition: background-color var(--t-fast) ease, color var(--t-fast) ease;
 }
 :root[data-shape='extra'] .chip-btn {
@@ -741,7 +680,15 @@ body[data-tone] .chip-btn {
   background: conic-gradient(#e9e6e1 0 50%, #2b2a28 0);
 }
 .swatch.custom {
-  background: conic-gradient(from 90deg, #ef8a68, #e3b55b, #7cb873, #2fb9d4, #a487e0, #e07a9b, #ef8a68);
+  display: grid;
+  place-items: center;
+  background: var(--raised-2);
+  color: var(--text-2);
+}
+.swatch.custom::after {
+  content: '+';
+  font-size: 16px;
+  line-height: 1;
 }
 .bg-grid {
   display: grid;
@@ -948,8 +895,7 @@ body[data-tone] .chip-btn {
   place-items: center;
   padding: 24px;
   overflow-y: auto;
-  background: radial-gradient(900px 600px at 20% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
-    radial-gradient(800px 600px at 100% 100%, color-mix(in srgb, var(--accent-2) 14%, transparent), transparent 70%), var(--sheet);
+  background: var(--sheet);
   animation: fade var(--t-slow) ease;
 }
 body.ob-open .stage,
@@ -1022,14 +968,13 @@ body.ob-open .corner-actions {
 }
 .ob-mark svg {
   border-radius: 14px;
-  box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 .ob-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 30px;
-  font-weight: 650;
-  letter-spacing: -0.025em;
+  font-family: var(--font-serif);
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
   line-height: 1.12;
 }
 .ob-sub {
@@ -1051,14 +996,9 @@ body.ob-open .corner-actions {
 }
 .ob-greeting {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-.ob-greeting .hello-lead {
-  color: var(--text-2);
-  font-weight: 450;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 400;
 }
 .ob-name {
   height: 44px;
@@ -1217,4 +1157,13 @@ body.ob-open .corner-actions {
     transform: scale(0.6) rotate(-8deg);
     opacity: 0;
   }
+}
+
+/* Expressive: larger icons with more room, no extra decoration. */
+.stage[data-style='expressive'] .shortcuts[data-style='tiles'] .tile-link {
+  width: 100px;
+}
+.stage[data-style='expressive'] .shortcuts[data-style='tiles'] .tile-icon img {
+  width: 38px;
+  height: 38px;
 }

@@ -615,6 +615,30 @@ def patch_preloading(text, src):
         'kNetworkPredictionOptions default')
 
 
+def patch_omnibox_prefs(text, src):
+    # The address bar's "AI Mode" and Google Lens buttons are off by default;
+    # both can be turned back on in Settings.
+    text = optional_replace(
+        text,
+        '      kShowAiModeOmniboxButton, true,\n',
+        '      kShowAiModeOmniboxButton, false,  // Rye\n',
+        'kShowAiModeOmniboxButton')
+    return optional_replace(
+        text,
+        '      kShowGoogleLensShortcut, true,\n',
+        '      kShowGoogleLensShortcut, false,  // Rye\n',
+        'kShowGoogleLensShortcut')
+
+
+def patch_omnibox_features(text, src):
+    # AI Mode entry point for non-Google search engines.
+    return optional_replace(
+        text,
+        'BASE_FEATURE(kAim3pEntrypoint, ENABLED);\n',
+        'BASE_FEATURE(kAim3pEntrypoint, DISABLED);  // Rye: no AI Mode button\n',
+        'kAim3pEntrypoint')
+
+
 # ─── New tab page ────────────────────────────────────────────────────────────
 
 def manifest_literal(folder):
@@ -706,6 +730,8 @@ PATCHES = [
     ('chrome/browser/ui/ui_features.cc', patch_ui_features),
     ('components/performance_manager/user_tuning/prefs.cc', patch_memory_saver),
     ('chrome/browser/preloading/preloading_prefs.cc', patch_preloading),
+    ('components/omnibox/browser/omnibox_prefs.cc', patch_omnibox_prefs),
+    ('components/omnibox/common/omnibox_features.cc', patch_omnibox_features),
     ('chrome/browser/extensions/component_loader.cc', patch_component_loader),
     ('chrome/installer/mini_installer/chrome.release', patch_release),
 ]
@@ -721,7 +747,9 @@ PARTS = {
     'lean': ['components/optimization_guide/core/optimization_guide_features.cc',
              'chrome/browser/ui/ui_features.cc',
              'components/performance_manager/user_tuning/prefs.cc',
-             'chrome/browser/preloading/preloading_prefs.cc'],
+             'chrome/browser/preloading/preloading_prefs.cc',
+             'components/omnibox/browser/omnibox_prefs.cc',
+             'components/omnibox/common/omnibox_features.cc'],
 }
 
 
