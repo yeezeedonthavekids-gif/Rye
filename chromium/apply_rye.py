@@ -4,6 +4,8 @@
 Usage (from any folder, with depot_tools' python3):
     python3 apply_rye.py C:\\src\\chromium\\src           apply everything
     python3 apply_rye.py C:\\src\\chromium\\src --check   show what would change
+    python3 apply_rye.py C:\\src\\chromium\\src --skip=float,colors
+        leave out parts (colors, float, sizes, newtab), for tracking down problems
 
 What it changes:
   1. Name, strings and icons (apply_branding.py).
@@ -421,6 +423,10 @@ def copy_extensions(out_dir, check):
     print(f'copied the new tab page to {dest_root}')
 
 
+def unchanged(text, src):
+    return text
+
+
 PATCHES = [
     ('chrome/browser/ui/color/chrome_color_mixers.cc', patch_color_mixers),
     ('chrome/browser/ui/views/frame/multi_contents_view.cc', patch_multi_contents_view),
@@ -428,6 +434,14 @@ PATCHES = [
     ('chrome/browser/extensions/component_loader.cc', patch_component_loader),
     ('chrome/installer/mini_installer/chrome.release', patch_release),
 ]
+
+# Names for --skip=..., to leave a change out (the file goes back to Chromium's).
+PARTS = {
+    'colors': 'chrome/browser/ui/color/chrome_color_mixers.cc',
+    'float': 'chrome/browser/ui/views/frame/multi_contents_view.cc',
+    'sizes': 'chrome/browser/ui/layout_constants.cc',
+    'newtab': 'chrome/browser/extensions/component_loader.cc',
+}
 
 
 # ─── Driver ──────────────────────────────────────────────────────────────────
@@ -466,6 +480,15 @@ def write_if_changed(path, text, rel, check):
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith('--')]
     check = '--check' in argv
+    skip = set()
+    for a in argv[1:]:
+        if a.startswith('--skip='):
+            skip.update(x for x in a[len('--skip='):].split(',') if x)
+    if skip - PARTS.keys():
+        print(f'unknown --skip part(s): {", ".join(sorted(skip - PARTS.keys()))}; '
+              f'choose from {", ".join(PARTS)}')
+        return 2
+    skipped_files = {PARTS[p] for p in skip}
     if len(args) != 1:
         print(__doc__)
         return 2
@@ -484,6 +507,9 @@ def main(argv):
         try:
             before = original(src, rel)
             patch = dict(PATCHES).get(rel)
+            if rel in skipped_files:
+                print(f'skipping {rel} (--skip)')
+                patch = unchanged
             if patch:
                 crlf = '\r\n' in before
                 after = patch(before.replace('\r\n', '\n'), src)
