@@ -645,7 +645,7 @@ def patch_install_modes(text, src):
     # Installs to %LOCALAPPDATA%\Rye and registers with Windows as Rye, so it
     # doesn't share a folder or a default-browser entry with Chromium.
     pairs = [
-        ('kProductPathName[] = L"Chromium";', 'kProductPathName[] = L"Rye";  // Rye'),
+        ('kProductPathName[] = L"Chromium";', 'kProductPathName[] = L"Rye";  // Rye: install as Rye'),
         ('.base_app_name = L"Chromium",', '.base_app_name = L"Rye",'),
         ('.base_app_id = L"Chromium",', '.base_app_id = L"Rye",'),
         ('.browser_prog_id_prefix = L"ChromiumHTM",', '.browser_prog_id_prefix = L"RyeHTM",'),
