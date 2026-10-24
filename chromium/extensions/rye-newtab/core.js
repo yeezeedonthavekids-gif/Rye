@@ -8,7 +8,14 @@
 'use strict';
 
 (() => {
-  const ext = typeof chrome !== 'undefined' && chrome.storage?.local ? chrome : null;
+  // Firefox's engine (Rye for Android) offers promise-based `browser`;
+  // Chromium offers `chrome`.
+  const ext =
+    typeof browser !== 'undefined' && browser.storage?.local
+      ? browser
+      : typeof chrome !== 'undefined' && chrome.storage?.local
+        ? chrome
+        : null;
   const STATE_KEY = 'rye.v1';
   const bgKey = (profileId) => `rye.bg.${profileId}`;
 
@@ -501,11 +508,16 @@
   let applyChain = Promise.resolve();
   // Rye's phone apps host these pages too. They expose window.RyeHost and a
   // message channel; the look is sent there so the app's own toolbar matches.
-  const host = typeof window !== 'undefined' ? window.RyeHost || null : null;
+  const androidApp =
+    typeof location !== 'undefined' && location.protocol === 'moz-extension:' && /Android/.test(navigator.userAgent);
+  const host =
+    typeof window === 'undefined'
+      ? null
+      : window.RyeHost || (androidApp ? { platform: 'android', defaultSearch: 'https://www.google.com/search?q=%s' } : null);
   function nativePost(message) {
     try {
       if (window.webkit?.messageHandlers?.rye) window.webkit.messageHandlers.rye.postMessage(message);
-      else if (window.RyeAndroid?.post) window.RyeAndroid.post(JSON.stringify(message));
+      else if (androidApp && typeof browser !== 'undefined') browser.runtime.sendNativeMessage('rye', message).catch(() => {});
     } catch {
       /* the app isn't listening */
     }

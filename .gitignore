@@ -7,3 +7,7 @@ mobile/ios/Rye.xcodeproj/
 mobile/ios/build/
 mobile/ios/Payload/
 mobile/ios/*.ipa
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/local.properties

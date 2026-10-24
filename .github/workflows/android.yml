@@ -1,0 +1,50 @@
+name: Android
+
+on:
+  push:
+    branches: [claude/rye-browser, main]
+    paths: ['mobile/android/**', 'chromium/extensions/rye-newtab/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14.3
+      - name: Build Rye.apk
+        working-directory: mobile/android
+        run: |
+          gradle assembleRelease --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk Rye.apk
+          ls -lh Rye.apk
+          # Rye's pages must be inside the app.
+          unzip -l Rye.apk | grep -E "assets/rye/(newtab.html|core.js|manifest.json)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rye-android
+          path: mobile/android/Rye.apk
+      # A direct download link for phones: the "android-preview" pre-release.
+      - name: Publish to the Android preview release
+        if: github.event_name != 'pull_request'
+        working-directory: mobile/android
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Rye for Android (arm64), built from ${GITHUB_SHA::7}. Download Rye.apk on your phone and open it to install."
+          if gh release view android-preview >/dev/null 2>&1; then
+            gh release upload android-preview Rye.apk --clobber
+            gh release edit android-preview --notes "$notes"
+          else
+            gh release create android-preview Rye.apk --prerelease --target "$GITHUB_SHA" \
+              --title "Rye for Android (preview)" --notes "$notes"
+          fi
