@@ -359,7 +359,12 @@ def patch_layout_constants(text, src):
 def manifest_literal(folder):
     """The extension's manifest, compacted, as a C++ raw string literal."""
     with open(os.path.join(EXTENSIONS, folder, 'manifest.json'), encoding='utf-8') as f:
-        text = json.dumps(json.load(f), separators=(',', ':'), ensure_ascii=True)
+        manifest = json.load(f)
+    # Component extensions get their ID from this public key; without one
+    # Chromium stops at startup (CHECK in component_loader.cc).
+    if not manifest.get('key'):
+        raise PatchError(f'{folder}/manifest.json needs a "key"')
+    text = json.dumps(manifest, separators=(',', ':'), ensure_ascii=True)
     if ')RYE_JSON' in text:
         raise PatchError(f'{folder}/manifest.json contains the literal delimiter')
     return f'R"RYE_JSON({text})RYE_JSON"'
