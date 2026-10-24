@@ -241,6 +241,17 @@ Rye also turns off background work by default (`lean` in `apply_rye.py`):
   off.
 - Tab hover cards don't keep screenshots of tabs.
 
+### Step 3: the installer
+
+```
+autoninja -C out\RyeLite -j 10 mini_installer
+```
+
+This makes `out\RyeLite\mini_installer.exe`. It installs Rye for the current
+user in `%LOCALAPPDATA%\Rye\Application`, with its own Start menu entry and
+default-browser entry. It isn't code-signed, so Windows SmartScreen shows
+"Windows protected your PC" the first time; choose More info → Run anyway.
+
 ### Next steps
 
 Changes that need C++ in Chromium itself, each as a separate patch you can build

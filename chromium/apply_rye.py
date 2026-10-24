@@ -639,6 +639,26 @@ def patch_omnibox_features(text, src):
         'kAim3pEntrypoint')
 
 
+# ─── Installer identity ──────────────────────────────────────────────────────
+
+def patch_install_modes(text, src):
+    # Installs to %LOCALAPPDATA%\Rye and registers with Windows as Rye, so it
+    # doesn't share a folder or a default-browser entry with Chromium.
+    pairs = [
+        ('kProductPathName[] = L"Chromium";', 'kProductPathName[] = L"Rye";  // Rye'),
+        ('.base_app_name = L"Chromium",', '.base_app_name = L"Rye",'),
+        ('.base_app_id = L"Chromium",', '.base_app_id = L"Rye",'),
+        ('.browser_prog_id_prefix = L"ChromiumHTM",', '.browser_prog_id_prefix = L"RyeHTM",'),
+        ('L"Chromium HTML Document",', 'L"Rye HTML Document",'),
+        ('.direct_launch_url_scheme = "chromium",', '.direct_launch_url_scheme = "rye",'),
+        ('.pdf_prog_id_prefix = L"ChromiumPDF",', '.pdf_prog_id_prefix = L"RyePDF",'),
+        ('L"Chromium PDF Document",', 'L"Rye PDF Document",'),
+    ]
+    for old, new in pairs:
+        text = replace_once(text, old, new)
+    return text
+
+
 # ─── New tab page ────────────────────────────────────────────────────────────
 
 def manifest_literal(folder):
@@ -732,6 +752,7 @@ PATCHES = [
     ('chrome/browser/preloading/preloading_prefs.cc', patch_preloading),
     ('components/omnibox/browser/omnibox_prefs.cc', patch_omnibox_prefs),
     ('components/omnibox/common/omnibox_features.cc', patch_omnibox_features),
+    ('chrome/install_static/chromium_install_modes.h', patch_install_modes),
     ('chrome/browser/extensions/component_loader.cc', patch_component_loader),
     ('chrome/installer/mini_installer/chrome.release', patch_release),
 ]
