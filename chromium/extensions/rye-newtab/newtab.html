@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>New Tab</title>
+    <link rel="stylesheet" href="newtab.css" />
+  </head>
+  <body>
+    <main class="center">
+      <div class="time" id="time" hidden>
+        <div class="clock" id="clock"></div>
+        <div class="date" id="date"></div>
+      </div>
+      <form class="search" id="search" role="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <input id="q" name="q" placeholder="Search the web or enter an address" autocomplete="off" spellcheck="false" aria-label="Search" />
+      </form>
+      <div class="grid" id="grid"></div>
+      <section class="list" id="frequent" hidden>
+        <div class="list-title">Most visited</div>
+        <div class="chips" id="frequent-chips"></div>
+      </section>
+    </main>
+
+    <button class="customize" id="customize" type="button" aria-expanded="false">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2a2 2 0 0 0-1.5 3.3A1.6 1.6 0 0 1 12 22Z" /><circle cx="7.5" cy="10.5" r="1" /><circle cx="12" cy="7.5" r="1" /><circle cx="16.5" cy="10.5" r="1" /></svg>
+      Customize
+    </button>
+
+    <aside class="panel" id="panel" hidden aria-label="Customize new tab">
+      <div class="panel-head">
+        <div class="panel-title">Customize</div>
+        <button class="icon-btn" id="panel-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="group-title">Background</div>
+      <div class="swatches" id="swatches"></div>
+      <div class="group-title">Show</div>
+      <div id="toggles"></div>
+    </aside>
+
+    <div class="scrim" id="editor" hidden>
+      <form class="dialog" id="editor-form">
+        <div class="panel-head">
+          <div class="panel-title" id="editor-title">Add shortcut</div>
+          <button class="icon-btn" id="editor-close" type="button" aria-label="Close">✕</button>
+        </div>
+        <label class="field-label">Name<input class="field" id="ed-title" placeholder="Optional" /></label>
+        <label class="field-label">Address<input class="field" id="ed-url" placeholder="example.com" /></label>
+        <div class="dialog-actions">
+          <button class="btn ghost danger" id="ed-remove" type="button">Remove</button>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="ed-cancel" type="button">Cancel</button>
+          <button class="btn primary" id="ed-save" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="newtab.js"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Rye",
+  "version": "0.1.0",
+  "description": "Rye's warm light look: an oat-toned frame, soft raised tabs and a quiet address bar.",
+  "theme": {
+    "colors": {
+      "frame": [241, 239, 235],
+      "frame_inactive": [245, 243, 240],
+      "frame_incognito": [44, 40, 52],
+      "frame_incognito_inactive": [52, 48, 60],
+      "toolbar": [251, 250, 248],
+      "tab_text": [40, 34, 27],
+      "tab_background_text": [109, 97, 79],
+      "tab_background_text_inactive": [155, 143, 126],
+      "bookmark_text": [109, 97, 79],
+      "toolbar_text": [40, 34, 27],
+      "toolbar_button_icon": [109, 97, 79],
+      "omnibox_background": [241, 239, 235],
+      "omnibox_text": [40, 34, 27],
+      "ntp_background": [255, 255, 255],
+      "ntp_text": [40, 34, 27],
+      "ntp_link": [75, 104, 136]
+    },
+    "properties": {
+      "ntp_background_alignment": "bottom"
+    }
+  }
+}

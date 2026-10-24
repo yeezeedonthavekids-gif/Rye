@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Rye Dark",
+  "version": "0.1.0",
+  "description": "Rye's warm dark look: a deep loam frame with softly lifted tabs.",
+  "theme": {
+    "colors": {
+      "frame": [28, 27, 25],
+      "frame_inactive": [33, 32, 30],
+      "frame_incognito": [30, 26, 38],
+      "frame_incognito_inactive": [36, 32, 44],
+      "toolbar": [45, 42, 40],
+      "tab_text": [238, 237, 237],
+      "tab_background_text": [184, 181, 178],
+      "tab_background_text_inactive": [139, 135, 131],
+      "bookmark_text": [184, 181, 178],
+      "toolbar_text": [238, 237, 237],
+      "toolbar_button_icon": [184, 181, 178],
+      "omnibox_background": [34, 32, 30],
+      "omnibox_text": [238, 237, 237],
+      "ntp_background": [34, 32, 30],
+      "ntp_text": [238, 237, 237],
+      "ntp_link": [145, 169, 195]
+    }
+  }
+}

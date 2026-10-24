@@ -166,21 +166,37 @@ Rye's. It only edits files that already exist, so it's safe to re-run, and
 
 ## Phase 3 — Rye's look and features
 
-Chromium's interface is written in C++ (the "Views" toolkit), not React, so Rye's
-design is rebuilt there instead of copied over:
+### Step 1: theme and new tab page (no rebuild needed)
 
-- **Colors and surfaces:** Rye's warm palette, accent and dark mode become
-  Chromium color mixers, its equivalent of Rye's design tokens.
+`chromium/extensions/` holds three add-ons you load from a folder:
+
+- `rye-theme`: Rye's warm light colors for the frame, tabs, toolbar and address bar.
+- `rye-theme-dark`: the warm dark version. Use one theme at a time.
+- `rye-newtab`: Rye's new tab page, with search, shortcuts, and an optional
+  clock, date and most-visited list, plus a Customize panel for backgrounds.
+
+To install:
+1. In Rye, open `chrome://extensions` and turn on **Developer mode** (top right).
+2. Click **Load unpacked** and choose `C:\src\rye\chromium\extensions\rye-theme`.
+3. Click **Load unpacked** again and choose `C:\src\rye\chromium\extensions\rye-newtab`.
+
+To update after changes: run `git pull` in `C:\src\rye`, then click the reload
+arrow on each add-on in `chrome://extensions`.
+
+Later these will be built into Rye as defaults, so installer users get them
+automatically.
+
+### Next steps
+
+Changes that need C++ in Chromium itself, each as a separate patch you can build
+and try:
+
 - **Shape and spacing:** the rounded tabs, address capsule and floating page sheet
   come from Chromium's layout constants and the views for the tab strip, toolbar
   and page area.
-- **New tab page:** Rye's new tab page, including shortcuts, background and
-  customize panel, ported as a built-in page.
-- **Features:** download ETAs, the sliding tab indicator, and other details,
-  reapplied one at a time.
-
-Each item is a separate patch you can build and try. This is the long part of the
-project, and we'll go through it in small steps.
+- **Defaults:** Rye's search engine, privacy settings and the add-ons above as
+  built-ins.
+- **Features:** download ETAs, the sliding tab indicator, and other details.
 
 ---
 
