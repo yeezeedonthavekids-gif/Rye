@@ -7,12 +7,30 @@ personal new tab page, and lighter defaults.
 
 ## Download
 
-Get **Rye-1.0-Setup.exe** from the [Releases](../../releases) page and run it.
-It installs for your user account only, in `%LOCALAPPDATA%\Rye`, with its own
-Start menu entry.
+Every file on the [Rye 1.0 release](../../releases/tag/v1.0.0) has been tested
+on each device it supports.
 
-The installer isn't code-signed yet, so Windows may show "Windows protected
-your PC". Choose **More info → Run anyway**.
+| Device | File | Tested on |
+| --- | --- | --- |
+| Windows 10/11 | **Rye-1.0-Setup.exe** | Windows 11 PC |
+| Android 8+ (arm64) | **Rye-1.0-Android.apk** | MuMu Player |
+| iPhone and iPad | **Rye-1.0-iPhone.ipa** | LiveContainer |
+
+**Windows.** Run the installer. It installs for your user account only, in
+`%LOCALAPPDATA%\Rye`, with its own Start menu entry. The installer isn't
+code-signed yet, so Windows may show "Windows protected your PC". Choose
+**More info → Run anyway**.
+
+**Android.** Download the APK on your phone and open it. Allow installs from
+your browser or file manager when Android asks. The Android app uses Firefox's
+engine (GeckoView), so it's larger than the iPhone app.
+
+**iPhone and iPad.** The app isn't signed, so install it with a sideloading
+app such as LiveContainer, AltStore or SideStore, which signs it on your phone.
+It uses Safari's engine, like every iPhone browser.
+
+The phone apps have Rye's new tab page, setup, Personalize and looks, with
+tabs and a bottom address bar.
 
 ## What's different from Chromium
 
@@ -105,7 +123,7 @@ code reads those same prefs.
   Chromium's own profiles.
 - **Corner style:** some parts of windows that are already open update after a
   restart.
-- **Windows only** for now.
+- **Phone apps** don't have extensions, bookmarks or sync yet.
 
 ## The Electron version
 
