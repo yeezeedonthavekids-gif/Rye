@@ -1,6 +1,5 @@
 /* Rye's design tokens, matching src/shared/theme.ts (warm tint, default accent). */
 :root {
-  /* Dark is the default, matching the built-in Rye theme. */
   --sheet: #22201e;
   --frame: #1c1b19;
   --raised: #2d2a28;
@@ -24,7 +23,29 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   color-scheme: dark;
 }
-/* Light tokens, used over light backgrounds. */
+/* Light tokens: Rye in light mode, and over light backgrounds. */
+@media (prefers-color-scheme: light) {
+  body:not([data-tone]) {
+    --sheet: #ffffff;
+    --frame: #f1efeb;
+    --raised: #fdfdfd;
+    --sunken: #e8e5e0;
+    --text: #28221b;
+    --text-2: #6d614f;
+    --text-3: #9b8f7e;
+    --accent: #5b7fa6;
+    --accent-text: #4b6888;
+    --accent-soft: rgba(91, 127, 166, 0.13);
+    --hover: rgba(40, 34, 27, 0.055);
+    --press: rgba(40, 34, 27, 0.09);
+    --hairline: rgba(40, 34, 27, 0.08);
+    --scrim: rgba(30, 24, 18, 0.22);
+    --shadow-1: 0 1px 1.5px rgba(42, 34, 24, 0.07), 0 1px 4px rgba(42, 34, 24, 0.05);
+    --shadow-2: 0 1px 2px rgba(42, 34, 24, 0.06), 0 4px 14px -2px rgba(42, 34, 24, 0.09);
+    --shadow-3: 0 2px 6px rgba(42, 34, 24, 0.07), 0 18px 44px -10px rgba(42, 34, 24, 0.22);
+    color-scheme: light;
+  }
+}
 body[data-tone='light'] {
   --sheet: #ffffff;
   --frame: #f1efeb;

@@ -166,18 +166,22 @@ Rye's. It only edits files that already exist, so it's safe to re-run, and
 
 ## Phase 3 — Rye's look and features
 
-### Step 1: built-in theme and new tab page
+### Step 1: Rye's interface, built in
 
-`chromium/apply_rye.py` does everything `apply_branding.py` does, and also builds
-Rye's dark theme and new tab page into the browser. They load automatically on
-every start, can't be removed by accident, and don't appear in
-`chrome://extensions`.
+`chromium/apply_rye.py` does everything `apply_branding.py` does, and also
+changes Chromium's own interface code, the way Brave and other browsers do:
 
-- The theme applies on a new profile, and whenever the profile is on the default
-  theme. If you pick another theme or color in Customize, Rye keeps your choice.
-- The new tab page has search, shortcuts, image backgrounds with a dim slider
-  (Customize → the first swatch, or drop a photo on the page), and an optional
-  clock, date and most-visited list.
+- **Colors:** Rye's warm palette is the browser's default color scheme, in
+  light and dark (following Windows). It covers the frame, tabs, toolbar,
+  address bar, menus, dialogs and settings pages. There is no theme to apply;
+  if you pick a theme or color in Customize, Rye steps aside for it.
+- **Shape:** the page floats as a rounded sheet inside the window (square again
+  in fullscreen), with no line under the toolbar, no dividers between tabs,
+  softer corners and a slightly more compact tab strip.
+- **New tab page:** search, shortcuts, photo backgrounds with a dim slider
+  (Customize → the first swatch, or drop a photo on the page) and an optional
+  clock, date and most-visited list. It's built in, so it can't be removed by
+  accident and doesn't appear in `chrome://extensions`.
 
 ```
 cd /d C:\src\rye
@@ -187,18 +191,17 @@ cd /d C:\src\chromium\src
 autoninja -C out\Rye chrome
 ```
 
-It patches three files in Chromium (`component_loader.cc`, `theme_service.cc`
-and the installer's `chrome.release`) and copies the add-on files to
-`out\Rye\rye_extensions`. Re-run it after every `git pull`.
+Re-run it after every `git pull`: it restores each file it patches with
+`git checkout` and patches it fresh, so it always applies the current version.
+To undo all of it, run `git checkout -- chrome` in `C:\src\chromium\src`.
 
 ### Next steps
 
 Changes that need C++ in Chromium itself, each as a separate patch you can build
 and try:
 
-- **Shape and spacing:** the rounded tabs, address capsule and floating page sheet
-  come from Chromium's layout constants and the views for the tab strip, toolbar
-  and page area.
+- **Tab shape:** Electron Rye's free-floating pill tabs, instead of Chromium's
+  tabs that join the toolbar (`tab_style_views.cc`).
 - **Defaults:** Rye's search engine and privacy settings.
 - **Features:** download ETAs, the sliding tab indicator, and other details.
 

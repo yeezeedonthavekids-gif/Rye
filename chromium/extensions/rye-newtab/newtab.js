@@ -215,7 +215,7 @@ async function renderFrequent() {
 function renderPanel() {
   const bg = prefs.background || { kind: 'theme' };
   const swatches = [
-    { kind: 'theme', style: 'background: linear-gradient(135deg, #22201e 50%, #2d2a28 50%)', title: 'Rye' },
+    { kind: 'theme', style: 'background: linear-gradient(135deg, var(--sheet) 50%, var(--raised) 50%)', title: 'Rye' },
     ...COLORS.map((c) => ({ kind: 'color', value: c, style: `background:${c}` })),
     ...GRADIENTS.map((g) => ({ kind: 'gradient', value: g, style: `background:${g}` })),
   ];
