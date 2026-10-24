@@ -1,9 +1,21 @@
 {
   "manifest_version": 3,
   "name": "Rye New Tab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Rye's calm new tab page: search, your shortcuts, and only the extras you turn on.",
-  "chrome_url_overrides": { "newtab": "newtab.html" },
-  "permissions": ["storage", "topSites", "search", "favicon"],
-  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" }
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "topSites",
+    "search",
+    "favicon"
+  ],
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
 }

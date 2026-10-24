@@ -16,11 +16,11 @@ const DEFAULTS = {
     { id: 's1', title: 'Wikipedia', url: 'https://www.wikipedia.org' },
     { id: 's2', title: 'GitHub', url: 'https://github.com' },
     { id: 's3', title: 'YouTube', url: 'https://www.youtube.com' },
-    { id: 's4', title: 'Gmail', url: 'https://mail.google.com' },
+    { id: 's4', title: 'Hacker News', url: 'https://news.ycombinator.com' },
   ],
 };
 
-const COLORS = ['#efe9e1', '#e4e8ec', '#e8ece6', '#1b1c1f', '#1d222b', '#26211d'];
+const COLORS = ['#1b1c1f', '#1d222b', '#26211d', '#efe9e1', '#e4e8ec'];
 const GRADIENTS = [
   'linear-gradient(160deg, #e9e1d6 0%, #d9dde3 100%)',
   'linear-gradient(160deg, #1d2230 0%, #2d2a3a 100%)',
@@ -31,15 +31,19 @@ const GRADIENTS = [
 
 const $ = (id) => document.getElementById(id);
 let prefs = structuredClone(DEFAULTS);
+// The uploaded photo is kept apart from prefs so small pref writes stay cheap.
+let bgImage = null;
 
 async function load() {
   try {
     if (ext) {
-      const got = await ext.storage.local.get('prefs');
+      const got = await ext.storage.local.get(['prefs', 'bgImage']);
       if (got.prefs) prefs = { ...DEFAULTS, ...got.prefs };
+      bgImage = got.bgImage || null;
     } else {
       const raw = localStorage.getItem('rye-prefs');
       if (raw) prefs = { ...DEFAULTS, ...JSON.parse(raw) };
+      bgImage = localStorage.getItem('rye-bg');
     }
   } catch {
     prefs = structuredClone(DEFAULTS);
@@ -112,7 +116,33 @@ function renderBackground() {
   if (bg.kind === 'color' || bg.kind === 'gradient') {
     document.body.style.background = bg.value;
     document.body.dataset.tone = isDark(bg.value) ? 'dark' : 'light';
+  } else if (bg.kind === 'image' && bgImage) {
+    const dim = (bg.dim ?? 25) / 100;
+    document.body.style.background = `linear-gradient(rgba(0,0,0,${dim}), rgba(0,0,0,${dim})), url("${bgImage}") center / cover fixed`;
+    document.body.dataset.tone = 'image';
   }
+}
+
+// Photos are resized to the screen and re-encoded, so a 20 MB camera file
+// becomes a few hundred KB and the page still opens instantly.
+async function chooseImage(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const bitmap = await createImageBitmap(file);
+  const max = Math.min(3840, Math.round(Math.max(screen.width, screen.height) * devicePixelRatio));
+  const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  bgImage = canvas.toDataURL('image/jpeg', 0.86);
+  try {
+    if (ext) await ext.storage.local.set({ bgImage });
+    else localStorage.setItem('rye-bg', bgImage);
+  } catch {
+    /* too large for storage: still show it for this tab */
+  }
+  update({ background: { kind: 'image', dim: prefs.background?.dim ?? 25 } });
 }
 
 function renderClock() {
@@ -185,11 +215,25 @@ async function renderFrequent() {
 function renderPanel() {
   const bg = prefs.background || { kind: 'theme' };
   const swatches = [
-    { kind: 'theme', style: 'background: linear-gradient(135deg, var(--sheet) 50%, var(--frame) 50%)', title: 'Match theme' },
+    { kind: 'theme', style: 'background: linear-gradient(135deg, #22201e 50%, #2d2a28 50%)', title: 'Rye' },
     ...COLORS.map((c) => ({ kind: 'color', value: c, style: `background:${c}` })),
     ...GRADIENTS.map((g) => ({ kind: 'gradient', value: g, style: `background:${g}` })),
   ];
+  const upload = el(
+    'button',
+    {
+      class: 'swatch upload',
+      type: 'button',
+      title: 'Upload image',
+      'aria-label': 'Upload image',
+      'aria-pressed': String(bg.kind === 'image'),
+      style: bgImage ? `background-image:url("${bgImage}")` : undefined,
+      onclick: () => (bgImage && bg.kind !== 'image' ? update({ background: { kind: 'image', dim: bg.dim ?? 25 } }) : $('file').click()),
+    },
+    bgImage ? '' : '+',
+  );
   $('swatches').replaceChildren(
+    upload,
     ...swatches.map((s) =>
       el('button', {
         class: 'swatch',
@@ -201,6 +245,8 @@ function renderPanel() {
       }),
     ),
   );
+  $('image-row').hidden = bg.kind !== 'image';
+  $('dim').value = String(bg.dim ?? 25);
   const toggles = [
     ['showSearch', 'Search box'],
     ['showShortcuts', 'Shortcuts'],
@@ -281,6 +327,23 @@ $('search').addEventListener('submit', (e) => {
   }
 });
 
+$('file').addEventListener('change', (e) => {
+  chooseImage(e.target.files[0]);
+  e.target.value = '';
+});
+$('change-image').addEventListener('click', () => $('file').click());
+$('dim').addEventListener('input', (e) => update({ background: { kind: 'image', dim: Number(e.target.value) } }));
+// Dropping a photo anywhere on the page sets it as the background.
+document.addEventListener('dragover', (e) => {
+  if ([...e.dataTransfer.items].some((i) => i.kind === 'file')) e.preventDefault();
+});
+document.addEventListener('drop', (e) => {
+  const file = [...e.dataTransfer.files].find((f) => f.type.startsWith('image/'));
+  if (!file) return;
+  e.preventDefault();
+  chooseImage(file);
+});
+
 $('customize').addEventListener('click', () => {
   const open = $('panel').hidden;
   $('panel').hidden = !open;
@@ -323,10 +386,9 @@ function tick() {
 
 if (ext) {
   chrome.storage.onChanged.addListener((changes) => {
-    if (changes.prefs) {
-      prefs = { ...DEFAULTS, ...changes.prefs.newValue };
-      render();
-    }
+    if (changes.bgImage) bgImage = changes.bgImage.newValue || null;
+    if (changes.prefs) prefs = { ...DEFAULTS, ...changes.prefs.newValue };
+    if (changes.prefs || changes.bgImage) render();
   });
 }
 

@@ -75,12 +75,13 @@ def write(path, text):
         f.write(text)
 
 
-def main():
-    if len(sys.argv) < 2:
+def main(argv=None):
+    argv = sys.argv if argv is None else argv
+    if len(argv) < 2:
         print(__doc__)
         return 2
-    src = os.path.abspath(sys.argv[1])
-    check = '--check' in sys.argv
+    src = os.path.abspath(argv[1])
+    check = '--check' in argv
     if not os.path.isfile(os.path.join(src, 'chrome', 'app', 'chromium_strings.grd')):
         print(f'{src} does not look like chromium/src (chrome/app/chromium_strings.grd not found).')
         return 1

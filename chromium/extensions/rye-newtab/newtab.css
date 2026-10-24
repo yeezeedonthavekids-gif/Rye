@@ -1,5 +1,31 @@
 /* Rye's design tokens, matching src/shared/theme.ts (warm tint, default accent). */
 :root {
+  /* Dark is the default, matching the built-in Rye theme. */
+  --sheet: #22201e;
+  --frame: #1c1b19;
+  --raised: #2d2a28;
+  --sunken: #262422;
+  --text: #eeeded;
+  --text-2: #b8b5b2;
+  --text-3: #8b8783;
+  --accent: #7593b4;
+  --accent-text: #91a9c3;
+  --accent-soft: rgba(117, 147, 180, 0.2);
+  --hover: rgba(255, 255, 255, 0.065);
+  --press: rgba(255, 255, 255, 0.1);
+  --hairline: rgba(255, 255, 255, 0.085);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --shadow-1: 0 1px 1.5px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px -2px rgba(0, 0, 0, 0.32);
+  --shadow-3: 0 2px 6px rgba(0, 0, 0, 0.32), 0 18px 44px -10px rgba(0, 0, 0, 0.6);
+  --r-md: 10px;
+  --r-lg: 13px;
+  --r-xl: 17px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: dark;
+}
+/* Light tokens, used over light backgrounds. */
+body[data-tone='light'] {
   --sheet: #ffffff;
   --frame: #f1efeb;
   --raised: #fdfdfd;
@@ -17,33 +43,7 @@
   --shadow-1: 0 1px 1.5px rgba(42, 34, 24, 0.07), 0 1px 4px rgba(42, 34, 24, 0.05);
   --shadow-2: 0 1px 2px rgba(42, 34, 24, 0.06), 0 4px 14px -2px rgba(42, 34, 24, 0.09);
   --shadow-3: 0 2px 6px rgba(42, 34, 24, 0.07), 0 18px 44px -10px rgba(42, 34, 24, 0.22);
-  --r-md: 10px;
-  --r-lg: 13px;
-  --r-xl: 17px;
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --sheet: #22201e;
-    --frame: #1c1b19;
-    --raised: #2d2a28;
-    --sunken: #262422;
-    --text: #eeeded;
-    --text-2: #b8b5b2;
-    --text-3: #8b8783;
-    --accent: #7593b4;
-    --accent-text: #91a9c3;
-    --accent-soft: rgba(117, 147, 180, 0.2);
-    --hover: rgba(255, 255, 255, 0.065);
-    --press: rgba(255, 255, 255, 0.1);
-    --hairline: rgba(255, 255, 255, 0.085);
-    --scrim: rgba(0, 0, 0, 0.5);
-    --shadow-1: 0 1px 1.5px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.2);
-    --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px -2px rgba(0, 0, 0, 0.32);
-    --shadow-3: 0 2px 6px rgba(0, 0, 0, 0.32), 0 18px 44px -10px rgba(0, 0, 0, 0.6);
-    color-scheme: dark;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -69,6 +69,7 @@ body {
   background: radial-gradient(900px 420px at 50% -8%, var(--accent-soft), transparent 70%), var(--sheet);
   background-size: cover;
   background-position: center;
+  background-attachment: fixed;
 }
 body[data-tone='dark'] {
   --text: #f6f3ef;
@@ -76,13 +77,6 @@ body[data-tone='dark'] {
   --text-3: rgba(246, 243, 239, 0.62);
   --hover: rgba(255, 255, 255, 0.1);
   --press: rgba(255, 255, 255, 0.16);
-}
-body[data-tone='light'] {
-  --text: #28221b;
-  --text-2: #4f4a44;
-  --text-3: #7b746c;
-  --hover: rgba(30, 26, 22, 0.06);
-  --press: rgba(30, 26, 22, 0.1);
 }
 button,
 input {
@@ -146,16 +140,14 @@ input {
   height: 50px;
   padding: 0 18px;
   border-radius: var(--r-xl);
-  background: var(--raised);
+  background: color-mix(in srgb, var(--raised) 88%, transparent);
   color: var(--text-3);
   box-shadow: var(--shadow-2), 0 0 0 1px var(--hairline);
-  transition: box-shadow 170ms ease;
+  backdrop-filter: blur(18px) saturate(1.2);
+  transition: box-shadow 170ms ease, background-color 170ms ease;
 }
 .search:focus-within {
   box-shadow: var(--shadow-3), 0 0 0 1px color-mix(in srgb, var(--accent), transparent 50%);
-}
-body[data-tone] .search {
-  --text: #28221b;
 }
 .search input {
   flex: 1;
@@ -318,15 +310,10 @@ body[data-tone] .search {
   border: 0;
   border-radius: 7px;
   background: color-mix(in srgb, var(--raised) 85%, transparent);
-  color: #28221b;
-  box-shadow: var(--shadow-1);
-  backdrop-filter: blur(10px);
+  color: var(--text);
+  box-shadow: var(--shadow-1), 0 0 0 1px var(--hairline);
+  backdrop-filter: blur(14px);
   font-weight: 500;
-}
-@media (prefers-color-scheme: dark) {
-  .customize {
-    color: #eeeded;
-  }
 }
 .customize:hover {
   background: var(--raised);
@@ -347,18 +334,6 @@ body[data-tone] .search {
   color: var(--text);
   box-shadow: var(--shadow-3), 0 0 0 0.5px var(--hairline);
   animation: panel-in 260ms var(--ease);
-}
-body[data-tone] .panel {
-  --text: #28221b;
-  --text-2: #6d614f;
-  --text-3: #9b8f7e;
-}
-@media (prefers-color-scheme: dark) {
-  body[data-tone] .panel {
-    --text: #eeeded;
-    --text-2: #b8b5b2;
-    --text-3: #8b8783;
-  }
 }
 @keyframes panel-in {
   from {
@@ -394,7 +369,7 @@ body[data-tone] .panel {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 7px;
-  margin-bottom: 18px;
+  margin-bottom: 8px;
 }
 .swatch {
   aspect-ratio: 1;
@@ -522,4 +497,36 @@ body[data-tone] .panel {
 }
 .btn.danger {
   color: #b84a3e;
+}
+
+/* Image backgrounds: text over the photo, a slider for how dark it gets. */
+body[data-tone='image'] .tile-title {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+body[data-tone='image'] .tile:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+body[data-tone='image'] .clock,
+body[data-tone='image'] .date,
+body[data-tone='image'] .list-title {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.swatch.upload {
+  display: grid;
+  place-items: center;
+  background: var(--sunken);
+  color: var(--text-2);
+  background-size: cover;
+  background-position: center;
+}
+.slider {
+  width: 140px;
+  accent-color: var(--accent);
+}
+.panel .note {
+  margin: 2px 0 18px;
+  color: var(--text-3);
+  font-size: 11.5px;
 }

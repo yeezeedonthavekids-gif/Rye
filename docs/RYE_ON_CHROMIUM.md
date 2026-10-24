@@ -166,25 +166,30 @@ Rye's. It only edits files that already exist, so it's safe to re-run, and
 
 ## Phase 3 — Rye's look and features
 
-### Step 1: theme and new tab page (no rebuild needed)
+### Step 1: built-in theme and new tab page
 
-`chromium/extensions/` holds three add-ons you load from a folder:
+`chromium/apply_rye.py` does everything `apply_branding.py` does, and also builds
+Rye's dark theme and new tab page into the browser. They load automatically on
+every start, can't be removed by accident, and don't appear in
+`chrome://extensions`.
 
-- `rye-theme`: Rye's warm light colors for the frame, tabs, toolbar and address bar.
-- `rye-theme-dark`: the warm dark version. Use one theme at a time.
-- `rye-newtab`: Rye's new tab page, with search, shortcuts, and an optional
-  clock, date and most-visited list, plus a Customize panel for backgrounds.
+- The theme applies on a new profile, and whenever the profile is on the default
+  theme. If you pick another theme or color in Customize, Rye keeps your choice.
+- The new tab page has search, shortcuts, image backgrounds with a dim slider
+  (Customize → the first swatch, or drop a photo on the page), and an optional
+  clock, date and most-visited list.
 
-To install:
-1. In Rye, open `chrome://extensions` and turn on **Developer mode** (top right).
-2. Click **Load unpacked** and choose `C:\src\rye\chromium\extensions\rye-theme`.
-3. Click **Load unpacked** again and choose `C:\src\rye\chromium\extensions\rye-newtab`.
+```
+cd /d C:\src\rye
+git pull
+python3 C:\src\rye\chromium\apply_rye.py C:\src\chromium\src
+cd /d C:\src\chromium\src
+autoninja -C out\Rye chrome
+```
 
-To update after changes: run `git pull` in `C:\src\rye`, then click the reload
-arrow on each add-on in `chrome://extensions`.
-
-Later these will be built into Rye as defaults, so installer users get them
-automatically.
+It patches three files in Chromium (`component_loader.cc`, `theme_service.cc`
+and the installer's `chrome.release`) and copies the add-on files to
+`out\Rye\rye_extensions`. Re-run it after every `git pull`.
 
 ### Next steps
 
@@ -194,8 +199,7 @@ and try:
 - **Shape and spacing:** the rounded tabs, address capsule and floating page sheet
   come from Chromium's layout constants and the views for the tab strip, toolbar
   and page area.
-- **Defaults:** Rye's search engine, privacy settings and the add-ons above as
-  built-ins.
+- **Defaults:** Rye's search engine and privacy settings.
 - **Features:** download ETAs, the sliding tab indicator, and other details.
 
 ---

@@ -35,6 +35,18 @@
       </div>
       <div class="group-title">Background</div>
       <div class="swatches" id="swatches"></div>
+      <div id="image-row" hidden>
+        <div class="row">
+          <span>Dim image</span>
+          <input class="slider" id="dim" type="range" min="0" max="70" step="1" aria-label="Dim image" />
+        </div>
+        <div class="row">
+          <span>Photo</span>
+          <button class="btn" id="change-image" type="button">Choose another…</button>
+        </div>
+      </div>
+      <p class="note">Tip: drop a photo anywhere on the page to use it.</p>
+      <input id="file" type="file" accept="image/*" hidden />
       <div class="group-title">Show</div>
       <div id="toggles"></div>
     </aside>
