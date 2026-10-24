@@ -18,8 +18,9 @@ What it changes:
      not listed in chrome://extensions), copied next to chrome.dll and added
      to the installer.
 
-Each patched file is first restored with `git checkout` and then patched
-fresh, so re-running after `git pull` always gives the current version. To
+Each file is patched fresh from Chromium's original (read with `git show`),
+and only written when its contents change, so re-running after `git pull`
+always gives the current version without rebuilding more than needed. To
 undo everything, run in the checkout:
     git checkout -- chrome
 """
@@ -405,11 +406,10 @@ def copy_extensions(out_dir, check):
     if check:
         print(f'would copy the new tab page to {dest_root}')
         return
-    if os.path.isdir(dest_root):
-        shutil.rmtree(dest_root)
     for folder, name in BUNDLED:
         shutil.copytree(os.path.join(EXTENSIONS, folder), os.path.join(dest_root, name),
-                        ignore=shutil.ignore_patterns('.*', 'Cached Theme.pak'))
+                        ignore=shutil.ignore_patterns('.*', 'Cached Theme.pak'),
+                        dirs_exist_ok=True)
     print(f'copied the new tab page to {dest_root}')
 
 
@@ -429,21 +429,30 @@ def read(path):
         return f.read()
 
 
-def restore(src, rel, check):
-    """Undo an earlier run's edits so every patch starts from Chromium's file."""
+def original(src, rel):
+    """Chromium's own version of a file, without any earlier Rye edits."""
     path = os.path.join(src, *rel.split('/'))
-    if MARK not in read(path):
-        return True
-    if check:
-        print(f'would restore {rel}')
-        return True
-    result = subprocess.run(['git', 'checkout', '--', rel], cwd=src,
-                            capture_output=True, text=True, shell=os.name == 'nt')
+    text = read(path)
+    if MARK not in text:
+        return text
+    result = subprocess.run(['git', 'show', f'HEAD:{rel}'], cwd=src, capture_output=True,
+                            shell=os.name == 'nt')
     if result.returncode != 0:
-        print(f'FAILED to restore {rel}: {result.stderr.strip()}')
-        return False
-    print(f'restored {rel}')
-    return True
+        raise PatchError(f'could not read the original from git: {result.stderr.decode(errors="replace").strip()}')
+    text = result.stdout.decode('utf-8')
+    return text.replace('\r\n', '\n').replace('\n', '\r\n') if '\r\n' in read(path) else text
+
+
+def write_if_changed(path, text, rel, check):
+    """Only touch files whose contents change, so rebuilds stay small."""
+    if read(path) == text:
+        print(f'up to date {rel}')
+    elif check:
+        print(f'would patch {rel}')
+    else:
+        with open(path, 'w', encoding='utf-8', newline='') as f:
+            f.write(text)
+        print(f'patched {rel}')
 
 
 def main(argv):
@@ -461,28 +470,21 @@ def main(argv):
     if status:
         return status
 
-    ok = all(restore(src, rel, check) for rel in RETIRED)
-    for rel, patch in PATCHES:
-        if not restore(src, rel, check):
-            ok = False
-            continue
+    ok = True
+    for rel in RETIRED + [rel for rel, _ in PATCHES]:
         path = os.path.join(src, *rel.split('/'))
-        before = read(path)
-        crlf = '\r\n' in before
         try:
-            after = patch(before.replace('\r\n', '\n'), src)
+            before = original(src, rel)
+            patch = dict(PATCHES).get(rel)
+            if patch:
+                crlf = '\r\n' in before
+                after = patch(before.replace('\r\n', '\n'), src)
+                before = after.replace('\n', '\r\n') if crlf else after
         except PatchError as e:
             print(f'FAILED {rel}: {e}')
             ok = False
             continue
-        if crlf:
-            after = after.replace('\n', '\r\n')
-        if check:
-            print(f'would patch {rel}')
-        else:
-            with open(path, 'w', encoding='utf-8', newline='') as f:
-                f.write(after)
-            print(f'patched {rel}')
+        write_if_changed(path, before, rel, check)
     if not ok:
         print('\nSome files did not match. Paste this output to get an updated script.')
         return 1

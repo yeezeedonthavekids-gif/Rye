@@ -71,8 +71,19 @@ def read(path):
 
 
 def write(path, text):
+    # Leave identical files alone: a new timestamp makes the build redo
+    # everything that depends on them.
+    if os.path.exists(path) and read(path) == text:
+        return
     with open(path, 'w', encoding='utf-8', newline='') as f:
         f.write(text)
+
+
+def copy_if_changed(src, dst):
+    with open(src, 'rb') as a, open(dst, 'rb') as b:
+        if a.read() == b.read():
+            return
+    shutil.copyfile(src, dst)
 
 
 def main(argv=None):
@@ -100,7 +111,7 @@ def main(argv=None):
             continue
         print(('  would copy ' if check else '  copy ') + rel_dst)
         if not check:
-            shutil.copyfile(os.path.join(HERE, 'branding', *rel_src.split('/')), dst)
+            copy_if_changed(os.path.join(HERE, 'branding', *rel_src.split('/')), dst)
 
     # 3. User-visible strings, in English and every translation.
     total = 0
@@ -119,9 +130,10 @@ def main(argv=None):
                 write(path, text)
     print(f'{"would rename" if check else "renamed"} {total} mentions of "Chromium" to "Rye" in strings')
 
-    print('\nDone.' if not check else '\nNothing was changed (--check).')
-    if not check:
-        print('Rebuild with:  autoninja -C out\\Rye chrome')
+    if __name__ == '__main__':
+        print('\nDone.' if not check else '\nNothing was changed (--check).')
+        if not check:
+            print('Rebuild with:  autoninja -C out\\Rye chrome')
     return 0
 
 
