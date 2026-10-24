@@ -53,37 +53,6 @@ Personalize also has:
 In a side-by-side test with YouTube and a Wikipedia article open, Rye used
 685 MB of private memory, against 1,573 MB for Helium. Your numbers will vary.
 
-## Build it yourself
-
-You need Windows, about 100 GB of free space, and a few hours for the first
-build. [docs/RYE_ON_CHROMIUM.md](docs/RYE_ON_CHROMIUM.md) walks through every
-step. In short:
-
-```
-:: 1. Get Chromium (see the guide for depot_tools and Visual Studio)
-mkdir C:\src\chromium && cd /d C:\src\chromium
-fetch --no-history chromium
-
-:: 2. Get Rye and apply it
-cd /d C:\src
-git clone https://github.com/yeezeedonthavekids-gif/Rye.git rye
-cd rye && git checkout claude/rye-browser
-python3 C:\src\rye\chromium\apply_rye.py C:\src\chromium\src
-
-:: 3. Build Rye and its installer
-cd /d C:\src\chromium\src
-gn gen out\RyeLite --args="is_debug=false is_component_build=false dcheck_always_on=false symbol_level=0 blink_symbol_level=0 v8_symbol_level=0"
-autoninja -C out\RyeLite chrome mini_installer
-```
-
-The installer is `out\RyeLite\mini_installer.exe`.
-
-After `git pull`, run `apply_rye.py` again and rebuild. It patches each file
-from Chromium's original and only writes files whose contents change, so
-rebuilds stay small. `--check` shows what would change, and `--skip=` leaves
-out parts (`colors`, `float`, `shape`, `newtab`, `lean`). To undo everything,
-run `git checkout -- chrome components` in the Chromium checkout.
-
 ## How it works
 
 Rye isn't a fork kept in a separate tree. It's a small set of edits that
