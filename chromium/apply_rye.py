@@ -359,8 +359,14 @@ uint32_t RyeSurfaceColor() {
 }
 
 float RyeCornerScale() {
-  constexpr float kScales[] = {0.75f, 1.0f, 1.45f};
-  return kScales[g_rye_shape];
+  switch (g_rye_shape) {
+    case 0:
+      return 0.75f;
+    case 2:
+      return 1.45f;
+    default:
+      return 1.0f;
+  }
 }
 
 void SetRyeAppearance(int shape, uint32_t surface_color) {
