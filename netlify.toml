@@ -1,8 +1,9 @@
-# Rye's website: a static page in site/, no build step.
+# Rye's website: a static page in site/. The build only packs Rye's source
+# code (everything but the website itself) into a zip the page links to.
 [build]
   base = "site"
   publish = "."
-  command = "echo 'Static site, nothing to build'"
+  command = "git -C .. archive --format=zip --prefix=Rye-1.0/ -o \"$PWD/Rye-1.0-source.zip\" HEAD -- . ':!site' ':!.github' ':!netlify.toml'"
 
 [[headers]]
   for = "/img/*"
